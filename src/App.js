@@ -39,7 +39,7 @@ class Stat extends Component {
             }
             else if(Moment(new Date()).add(24, 'hours').isAfter(this.props.due))
             {
-                this.setState({classNames: "card-link highlight yellow"});
+                this.setState({classNames: "card-link highlight due-24-hours"});
             }
             else if(Moment(new Date()).add(7, 'days').isAfter(this.props.due))
             {

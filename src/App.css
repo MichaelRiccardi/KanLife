@@ -58,11 +58,11 @@
     background: #ff99ff;
 }
 
-.Done .tbd {
+.Done .tbd, .Done .due-24-hours {
     background: none !important;
 }
 
-.yellow {
+.due-24-hours {
     background: yellow;
 }
 
