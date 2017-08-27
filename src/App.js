@@ -171,8 +171,17 @@ class App extends Component {
     }
 
     componentDidMount() {
-        //this.setInterval( () => {
-        jQuery.get("https://api.trello.com/1/boards/kNrLkVPc/cards?fields=name,desc,due,labels,idList&key="+Authentication.TrelloKey+"&token="+Authentication.TrelloToken)
+        this.startPolling();
+    }
+
+    startPolling() {
+    	var self = this;
+   		self.poll();
+   		self._timer = setInterval(self.poll.bind(self), 15000);
+    }
+
+    poll() {
+    	jQuery.get("https://api.trello.com/1/boards/kNrLkVPc/cards?fields=name,desc,due,labels,idList&key="+Authentication.TrelloKey+"&token="+Authentication.TrelloToken)
             .then(result => {
             
                 result.sort(function(a,b) {
@@ -180,11 +189,15 @@ class App extends Component {
                     var bDue = (b.due) ? new Date(b.due).getTime() : 0;
                     return aDue - bDue;
                 })  
-            
                 this.setState({cards: result});
-                //console.log(result);
-            });
-        //}, 60000);        
+        });
+    }
+
+   	componentWillUnmount() {
+    	if (this._timer) {
+    		clearInterval(this._timer);
+    		this._timer = null;
+    	}
     }
 
     render(){
