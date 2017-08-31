@@ -100,7 +100,7 @@ input[type=time] {
     background: yellow;
 }
 
-.Scheduled .past-due, .Progress .past-due, .Scheduled .past-scheduled {
+.Open .past-due, .Scheduled .past-scheduled, .Scheduled .past-due, .Progress .past-due, .Hold .past-due {
     background: red;
     color: white;
 }
