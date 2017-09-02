@@ -70,6 +70,7 @@ class Card extends Component {
 	    this.edit = this.edit.bind(this);
 	    this.cancelEdit = this.cancelEdit.bind(this);
 	    this.updateCard = this.updateCard.bind(this);
+	    this.delete = this.delete.bind(this);
 	}
 
     edit() {
@@ -164,6 +165,27 @@ class Card extends Component {
     	}
     }
 
+    delete() {
+    	if(window.confirm("Are you sure you want to delete this card?")) {
+    		var params = {
+    			key: Authentication.TrelloKey,
+    			token: Authentication.TrelloToken,
+    		};
+	    	jQuery.ajax({
+	    		type: "DELETE",
+	    		url: "https://api.trello.com/1/cards/"+this.props.id,
+	    		data: params,
+	    		success: function() {
+	    			window.location.reload();
+	//    			self.props.poll();
+	    		},
+	    		error: function(xhr) {
+	    			alert("Error saving your changes: "+xhr.responseText);
+	    		}
+	    	})
+    	}
+    }
+
     moveTo(id) {
     	alert("card "+this.props.id+ " move to " + id);
     }
@@ -208,6 +230,7 @@ class Card extends Component {
 		                
 		                <input className="btn btn-success" type="submit" value="&#10004;" />
 		                <input className="btn btn-danger" type="button" value="X" onClick={this.cancelEdit} />
+		                {this.props.isNew || <input className="btn btn-basic" type="button" value="&#128465;" onClick={this.delete} />}
 
 		              </div>
 		            </div>
