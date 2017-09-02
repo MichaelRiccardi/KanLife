@@ -29,11 +29,9 @@ const cardSource = {
 			return;
 		}
 
-		alert('not dropped anywhere');
+		//alert('not dropped anywhere');
 		//const item = monitor.getItem();
 		//const dropResult = monitor.getDropResult();
-
-		//item.moveTo(dropResult.id);
 	}
 }
 
@@ -65,7 +63,7 @@ class Card extends Component {
 	            Moment(props.description.substring( props.description.indexOf("=sch}") - 20,  props.description.indexOf("=sch}") ))
 	                : null,
 	        description: (props.description) ? props.description.replace(/\{[^}]+\}/g, '').replace(/(^[ \t]*\n)/gm, "") : "",
-	        editing: false,
+	        editing: (props.isNew) ? true : false,
 	        title: props.title,
 	        subtitle: props.subtitle
     	}
@@ -79,7 +77,6 @@ class Card extends Component {
     }
 
     updateCard(e) {
-    	//var self=this;
     	e.preventDefault();
 
     	var form = document.forms["edit-"+this.props.id];
@@ -120,9 +117,21 @@ class Card extends Component {
     		due: (due) ? due.toDate() : null
     	}
 
+    	var url;
+    	var type;
+
+    	if (this.props.isNew) {
+    		type = "POST";
+    		url = "https://api.trello.com/1/cards?idList=" + this.props.listId;
+    	}
+    	else {
+    		type = "PUT";
+    		url = "https://api.trello.com/1/cards/"+this.props.id; 
+    	}
+
     	jQuery.ajax({
-    		type: 'PUT',
-    		url: "https://api.trello.com/1/cards/"+this.props.id,
+    		type: type,
+    		url: url,
     		data: params,
     		success: function() {
     			window.location.reload();
@@ -147,7 +156,12 @@ class Card extends Component {
     }
 
     cancelEdit() {
-    	this.setState({editing: false});
+    	if(this.props.isNew) {
+    		this.props.cancelNewCard();
+    	}
+    	else {
+    		this.setState({editing: false});	
+    	}
     }
 
     moveTo(id) {
@@ -204,9 +218,8 @@ class Card extends Component {
     	else
     	{
 	        return connectDragSource(
-	            <div className="card card-outline-info draggable"> 
+	            <div className="card card-outline-info"> 
 	        	{!isDragging && (
-
 	            
 	              <div className="card-block">
 

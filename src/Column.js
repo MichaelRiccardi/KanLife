@@ -67,15 +67,53 @@ function collect(connect, monitor) {
 
 class Column extends Component {
 
-    state = {
-        classNames: "col " + this.props.title
+    constructor(props) {
+        super();
+        this.state = {
+            classNames: "col " + props.title,
+            newCard: []
+        }
+        this.addNewCard = this.addNewCard.bind(this);
+        this.cancelNewCard = this.cancelNewCard.bind(this);
+    }
+
+    addNewCard() {
+        if(this.state.newCard.length == 0)
+        {
+            const blankCard = {
+                title: "",
+                labels: [],
+                desc: "",
+                due: null,
+                poll: this.props.poll
+            };
+            this.setState({ newCard: [ blankCard ] });
+        }
+    }
+
+    cancelNewCard() {
+        this.setState({ newCard : [] });
     }
     
     render() {
         const { connectDropTarget, isOver } = this.props;
         return connectDropTarget(
             <div className={this.state.classNames}>
-                <h2>{this.props.title}</h2>
+                <h2>{this.props.title} <input className="btn btn-primary new-button" type="button" value="+" onClick={this.addNewCard} /></h2>
+
+                {this.state.newCard.map(card =>
+                    <Card title={card.name}
+                        subtitle={(card.labels[0]) ? card.labels[0].name : ""}
+                        subtitleId={(card.labels[0] ? card.labels[0].id : "")}
+                        description={card.desc}
+                        due={card.due}
+                        key={this.props.id}
+                        listId={this.props.id}
+                        poll={this.props.poll}
+                        isNew
+                        cancelNewCard={this.cancelNewCard}
+                    />
+                )}
                 
                 {this.props.cards
                     .filter(card => card.idList === this.props.id )                 

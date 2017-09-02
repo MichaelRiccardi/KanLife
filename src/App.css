@@ -36,6 +36,10 @@ input[type=time] {
   cursor:pointer;
 }
 
+.new-button {
+  float: none !important;
+}
+
 .root .card {
     background-color: white;
     border-radius: 1em;
