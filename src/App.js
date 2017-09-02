@@ -5,14 +5,10 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import '../node_modules/font-awesome/css/font-awesome.min.css'; 
 
 import Authentication from './authentication.js';
-import { DragDropContext, DragSource } from 'react-dnd';
 import jQuery from 'jquery';
-import Textarea from 'react-textarea-autosize';
+import { DragDropContext } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
 
-import Icon from './Icon.js';
-import Stat from './Stat.js';
-import Card from './Card.js';
 import Column from './Column.js'; 
 
 class App extends Component {
@@ -29,9 +25,7 @@ class App extends Component {
 	        ],
 	        cards: []
 	    }
-	}
-
-    
+	}    
 
     componentDidMount() {
         this.startPolling();
@@ -85,4 +79,3 @@ class App extends Component {
 }
 
 export default DragDropContext(HTML5Backend)(App);
-

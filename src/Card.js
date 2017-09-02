@@ -3,9 +3,46 @@ import Authentication from './authentication.js';
 import Moment from 'moment';
 import Textarea from 'react-textarea-autosize';
 import jQuery from 'jquery';
+import { DragSource } from 'react-dnd';
 
 import Icon from './Icon.js';
 import Stat from './Stat.js';
+import Types from './Types.js';
+
+const cardSource = {
+	canDrag(props) {
+		return true;
+	},
+
+	isDragging(props, monitor) {
+		return monitor.getItem().id === props.id;
+	},
+
+	beginDrag(props, monitor, component) {
+		//alert('potato');
+		const item = { id: props.id };
+		return item;
+	},
+
+	endDrag(props, monitor, component) {
+		if(monitor.didDrop()) {
+			return;
+		}
+
+		alert('not dropped anywhere');
+		//const item = monitor.getItem();
+		//const dropResult = monitor.getDropResult();
+
+		//item.moveTo(dropResult.id);
+	}
+}
+
+function collect(connect, monitor) {
+	return {
+		connectDragSource: connect.dragSource(),
+		isDragging: monitor.isDragging()
+	}
+}
 
 class Card extends Component {
 
@@ -112,7 +149,14 @@ class Card extends Component {
     	this.setState({editing: false});
     }
 
+    moveTo(id) {
+    	alert("card "+this.props.id+ " move to " + id);
+    }
+
     render() {
+
+    	const { isDragging, connectDragSource } = this.props;
+
     	if(this.state.editing)
     	{
     		return ( 
@@ -149,13 +193,15 @@ class Card extends Component {
     	}
     	else
     	{
-	        return (
-	            
+	        return connectDragSource(
 	            <div className="card card-outline-info draggable"> 
+	        	{!isDragging && (
+
+	            
 	              <div className="card-block">
 
 	                <h4 className="card-title">
-	                    {this.state.title}
+	                    {this.state.title} {isDragging && 'dragging!'}
 	                    <span className="card-priority" onClick={this.edit}>
 	                        <Icon name="pencil" />
 	                    </span>
@@ -175,6 +221,9 @@ class Card extends Component {
 	                <Stat icon="inbox" value={this.state.duePretty} due={this.state.due} />
 
 	              </div>
+	            
+
+	            )}
 	            </div>
 
 	        );
@@ -183,4 +232,4 @@ class Card extends Component {
 
 }
 
-export default Card;
+export default DragSource(Types.CARD, cardSource, collect)(Card);
