@@ -82,6 +82,7 @@ class Column extends Component {
                     .map(card => (
                     <Card title={card.name}
                         subtitle={(card.labels[0]) ? card.labels[0].name : ""}
+                        subtitleId={(card.labels[0] ? card.labels[0].id : "")}
                         description={card.desc}
                         due={card.due}
                         key={card.id}
