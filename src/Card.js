@@ -65,7 +65,9 @@ class Card extends Component {
 	        description: (props.description) ? props.description.replace(/\{[^}]+\}/g, '').replace(/(^[ \t]*\n)/gm, "") : "",
 	        editing: (props.isNew) ? true : false,
 	        title: props.title,
-	        subtitle: props.subtitle
+	        subtitle: props.subtitle,
+	        link: (props.description.indexOf("{url=") > -1) ?
+	            props.description.substring( props.description.indexOf("{url=") + 5, props.description.indexOf("=url}") ) : null
     	}
 	    this.edit = this.edit.bind(this);
 	    this.cancelEdit = this.cancelEdit.bind(this);
@@ -85,6 +87,7 @@ class Card extends Component {
 
     	var scheduled = "";
     	var estimated = "";
+    	var link = "";
 
     	if(form.scheduledDate.value !== "" && //"2017-08-27"
 			form.scheduledTimeStart.value !== "" &&
@@ -109,12 +112,16 @@ class Card extends Component {
     		//due = Moment(due).format("YYYY-MM-DDTHH:mm:00[Z]");
     	}
 
+    	if(form.link.value.indexOf("http") === 0) {
+    		link = "\n{url=" + form.link.value + "=url}";
+    	}
+
     	var params = {
     		key: Authentication.TrelloKey,
     		token: Authentication.TrelloToken,
     		idLabels: form.label.value,
     		name: form.name.value,
-    		desc: form.desc.value + scheduled + estimated,
+    		desc: form.desc.value + scheduled + estimated + link,
     		due: (due) ? due.toDate() : null
     	}
 
@@ -220,6 +227,7 @@ class Card extends Component {
 		                </h6>
 
 		                <p className="card-text">
+		                	<input name="link" type="text" style={{width: '100%'}} placeholder="URL" defaultValue={this.state.link} />
 		                    <Textarea name="desc" placeholder="Description" defaultValue={this.state.description} />
 		                </p>
 
@@ -247,7 +255,8 @@ class Card extends Component {
 	              <div className="card-block">
 
 	                <h4 className="card-title">
-	                    {this.state.title} {isDragging && 'dragging!'}
+	                	{this.state.link && (<a href={this.state.link} target="_blank">{this.state.title}</a>)}
+	                    {!this.state.link && (<span>{this.state.title}</span>)}
 	                    <span className="card-priority" onClick={this.edit}>
 	                        <Icon name="pencil" />
 	                    </span>
