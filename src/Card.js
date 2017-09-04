@@ -4,6 +4,7 @@ import Moment from 'moment';
 import Textarea from 'react-textarea-autosize';
 import jQuery from 'jquery';
 import { DragSource } from 'react-dnd';
+import ReactMarkdown from 'react-markdown';
 
 import Icon from './Icon.js';
 import Stat from './Stat.js';
@@ -267,7 +268,7 @@ class Card extends Component {
 	                </h6>
 
 	                <p className="card-text">
-	                    {this.state.description}
+	                    <ReactMarkdown source={this.state.description} />
 	                </p>
 
 	                <Stat icon="clock-o" value={this.state.estimated} />
