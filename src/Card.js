@@ -7,6 +7,7 @@ import { DragSource } from 'react-dnd';
 import ReactMarkdown from 'react-markdown';
 
 import Icon from './Icon.js';
+import Priority from './Priority.js';
 import Stat from './Stat.js';
 import Types from './Types.js';
 
@@ -68,7 +69,9 @@ class Card extends Component {
 	        title: props.title,
 	        subtitle: props.subtitle,
 	        link: (props.description.indexOf("{url=") > -1) ?
-	            props.description.substring( props.description.indexOf("{url=") + 5, props.description.indexOf("=url}") ) : null
+	            props.description.substring( props.description.indexOf("{url=") + 5, props.description.indexOf("=url}") ) : null,
+	        priority: (props.description.indexOf("{pri=") > -1) ?
+	        	props.description.substring( props.description.indexOf("{pri=") + 5, props.description.indexOf("=pri}") ) : 0
     	}
 	    this.edit = this.edit.bind(this);
 	    this.cancelEdit = this.cancelEdit.bind(this);
@@ -89,6 +92,7 @@ class Card extends Component {
     	var scheduled = "";
     	var estimated = "";
     	var link = "";
+    	var priority = "";
 
     	if(form.scheduledDate.value !== "" && //"2017-08-27"
 			form.scheduledTimeStart.value !== "" &&
@@ -117,12 +121,16 @@ class Card extends Component {
     		link = "\n{url=" + form.link.value + "=url}";
     	}
 
+    	if(form.priority.value != "0") {
+    		priority = "\n{pri=" + form.priority.value + "=pri}";
+    	}
+
     	var params = {
     		key: Authentication.TrelloKey,
     		token: Authentication.TrelloToken,
     		idLabels: form.label.value,
     		name: form.name.value,
-    		desc: form.desc.value + scheduled + estimated + link,
+    		desc: form.desc.value + scheduled + estimated + link + priority,
     		due: (due) ? due.toDate() : null
     	}
 
@@ -225,6 +233,13 @@ class Card extends Component {
 		                    	<option value="598fa18d1314a339991101b3">Internships 2018</option>
 		                    	<option value="598faa081314a339991107e4">Life</option>                 	
 	                    	</select>
+	                    	<select name="priority" defaultValue={this.state.priority}>
+	                    		<option value="0"></option>
+	                    		<option value="4">Blocker</option>
+	                    		<option value="3">Critical</option>
+	                    		<option value="2">Important</option>
+	                    		<option value="1">Minor</option>
+	                    	</select>
 		                </h6>
 
 		                <p className="card-text">
@@ -258,8 +273,11 @@ class Card extends Component {
 	                <h4 className="card-title">
 	                	{this.state.link && (<a href={this.state.link} target="_blank">{this.state.title}</a>)}
 	                    {!this.state.link && (<span>{this.state.title}</span>)}
-	                    <span className="card-priority" onClick={this.edit}>
+	                    <span className="card-edit" onClick={this.edit}>
 	                        <Icon name="pencil" />
+	                    </span>
+	                    <span className="card-priority">
+	                    	<Priority level={this.state.priority} />
 	                    </span>
 	                </h4>
 

@@ -110,6 +110,7 @@ class Column extends Component {
                         key={this.props.id}
                         listId={this.props.id}
                         poll={this.props.poll}
+                        priority={this.props.prioirty}
                         isNew
                         cancelNewCard={this.cancelNewCard}
                     />
@@ -126,6 +127,7 @@ class Column extends Component {
                         key={card.id}
                         id={card.id}
                         poll={this.props.poll}
+                        priority={this.props.prioirty}
                     />
                 ))}
                
