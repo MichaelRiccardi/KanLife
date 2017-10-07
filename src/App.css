@@ -10,6 +10,13 @@ textarea {
 
 }
 
+code { 
+    background-color: yellow !important;
+    color: black !important; 
+    font-family: -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif !important;
+    font-size: inherit !important;
+}
+
 input::-webkit-inner-spin-button {
     -webkit-appearance: none;
     display: none;
