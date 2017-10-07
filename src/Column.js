@@ -75,6 +75,7 @@ class Column extends Component {
         }
         this.addNewCard = this.addNewCard.bind(this);
         this.cancelNewCard = this.cancelNewCard.bind(this);
+        this.archiveDone = this.archiveDone.bind(this);
     }
 
     addNewCard() {
@@ -94,12 +95,39 @@ class Column extends Component {
     cancelNewCard() {
         this.setState({ newCard : [] });
     }
+
+    archiveDone() {
+        if(window.confirm("Are you sure you want to archive all \"done\" cards?")) {
+            var type = "POST";
+            var url = "https://api.trello.com/1/lists/"+this.props.id+"/archiveAllCards";
+            var params = {
+                key: Authentication.TrelloKey,
+                token: Authentication.TrelloToken
+            }
+
+            jQuery.ajax({
+                type: type,
+                url: url,
+                data: params,
+                success: function() {
+                    window.location.reload();
+                },
+                error: function(xhr) {
+                    alert("Error saving your changes: "+xhr.responseText);
+                }
+            })
+        }        
+    }
     
     render() {
         const { connectDropTarget, isOver } = this.props;
         return connectDropTarget(
             <div className={this.state.classNames}>
-                <h2>{this.props.title} <input className="btn btn-primary new-button" type="button" value="+" onClick={this.addNewCard} /></h2>
+                <h2>
+                    {this.props.title}
+                    <input className="btn btn-primary new-button" type="button" value="+" onClick={this.addNewCard} />
+                    {(this.props.title == "Done") ? <input className="btn btn-success new-button" type="button" value="&#x267B;" onClick={this.archiveDone} /> : ""}
+                </h2>
 
                 {this.state.newCard.map(card =>
                     <Card title={card.name}
