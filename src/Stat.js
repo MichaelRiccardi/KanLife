@@ -6,7 +6,17 @@ import Icon from './Icon.js';
 class Stat extends Component {
     
     state = {
-        classNames: "card-link"
+        classNames: "card-link",
+        color: false
+    }
+
+    pickFromGradient(startColor, endColor, fraction) {
+        var result = [];
+        for(var i=0;i<3;i++) {
+            result[i] = Math.round(startColor[i] + (endColor[i] - startColor[i]) * fraction);
+        }
+        console.log("rgb(" + result.join(",") + ")");
+        this.setState({color: "rgb(" + result.join(",") + ")"});
     }
 
     componentDidMount() {
@@ -26,6 +36,8 @@ class Stat extends Component {
             }
             else if(Moment(new Date()).add(7, 'days').isAfter(this.props.due))
             {
+                var fraction = (Moment(this.props.due).diff(Moment(new Date()), 'hours') - 24) / (6*24);
+                this.pickFromGradient([0xFF, 0xFF, 0x00], [0x00, 0xFF, 0x00], fraction);
                 this.setState({classNames: "card-link highlight due-this-week"});
             }            
         }
@@ -93,8 +105,11 @@ class Stat extends Component {
     		);
     	}
     	else {
+            var styleObj = (!this.state.color) ? {} : {
+                backgroundColor: this.state.color
+            };
 	        return (
-	            <span className={this.state.classNames}>
+	            <span className={this.state.classNames} style={styleObj}>
 	                <Icon name={this.props.icon} />
 	                {this.props.value}
 	            </span>
