@@ -123,7 +123,7 @@ input[type=time] {
     background: yellow;
 }
 
-.Open .past-due, .Scheduled .past-scheduled, .Scheduled .past-due, .Progress .past-due, .Hold .past-due {
+.Open .past-due, .Scheduled .tbd, .Scheduled .past-scheduled, .Scheduled .past-due, .Progress .past-due, .Hold .past-due {
     background: red;
     color: white;
 }

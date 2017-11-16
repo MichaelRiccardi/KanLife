@@ -58,6 +58,8 @@ class Card extends Component {
 	            Moment(
 	                props.description.substring( props.description.indexOf("{sch=") + 5,  props.description.indexOf("{sch=") + 5 + 20 ))
 	                .format("ddd M/D h:mma") : "TBD",
+	        scheduledDate: Moment(
+	                props.description.substring( props.description.indexOf("{sch=") + 5,  props.description.indexOf("{sch=") + 5 + 20 )),
 	        scheduledStart: (props.description.indexOf("{sch=") > -1) ?
 	            Moment(props.description.substring( props.description.indexOf("{sch=") + 5,  props.description.indexOf("{sch=") + 5 + 20 ))
 	                : null,
