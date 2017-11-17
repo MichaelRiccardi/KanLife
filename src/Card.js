@@ -73,7 +73,9 @@ class Card extends Component {
 	        link: (props.description.indexOf("{url=") > -1) ?
 	            props.description.substring( props.description.indexOf("{url=") + 5, props.description.indexOf("=url}") ) : null,
 	        priority: (props.description.indexOf("{pri=") > -1) ?
-	        	props.description.substring( props.description.indexOf("{pri=") + 5, props.description.indexOf("=pri}") ) : 0
+	        	props.description.substring( props.description.indexOf("{pri=") + 5, props.description.indexOf("=pri}") ) : 0,
+	        saving: false,
+	        visible: true
     	}
 	    this.edit = this.edit.bind(this);
 	    this.cancelEdit = this.cancelEdit.bind(this);
@@ -87,6 +89,8 @@ class Card extends Component {
 
     updateCard(e) {
     	e.preventDefault();
+
+    	var self = this;
 
     	var form = document.forms["edit-"+this.props.id];
     	var utcOffset = (new Date().getTimezoneOffset() / 60);
@@ -148,30 +152,25 @@ class Card extends Component {
     		url = "https://api.trello.com/1/cards/"+this.props.id; 
     	}
 
+    	this.setState({saving: true});
+
     	jQuery.ajax({
     		type: type,
     		url: url,
     		data: params,
     		success: function() {
-    			window.location.reload();
-//    			self.props.poll();
-
-    			/*self.setState({
-    				title: form.name.value,
-    				estimated: form.estimated.value,
-    				due: due,
-    				editing: false,
-    				duePretty: (due) ? Moment(due).format("ddd M/D h:mma") : "TBD"
-    			});*/
+				self.props.poll();
+    			self.setState({editing: false});
+    			if(self.props.isNew) {
+    				self.props.cancelNewCard();
+    			}
     		},
     		error: function(xhr) {
+    			this.setState({saving: false});
     			alert("Error saving your changes: "+xhr.responseText);
+    			console.log(xhr);
     		}
     	})
-
-    	
-
-    	console.log(params);
     }
 
     cancelEdit() {
@@ -184,21 +183,24 @@ class Card extends Component {
     }
 
     delete() {
+    	var self = this;
     	if(window.confirm("Are you sure you want to delete this card?")) {
     		var params = {
     			key: Authentication.TrelloKey,
     			token: Authentication.TrelloToken,
     		};
+    		self.setState({saving: true});
 	    	jQuery.ajax({
 	    		type: "DELETE",
 	    		url: "https://api.trello.com/1/cards/"+this.props.id,
 	    		data: params,
 	    		success: function() {
-	    			window.location.reload();
-	//    			self.props.poll();
+	    			self.props.poll();
 	    		},
 	    		error: function(xhr) {
-	    			alert("Error saving your changes: "+xhr.responseText);
+	    			self.setState({saving: false});
+	    			alert("Error deleting card: "+xhr.responseText);
+	    			console.log(xhr);
 	    		}
 	    	})
     	}
@@ -212,7 +214,20 @@ class Card extends Component {
 
     	const { isDragging, connectDragSource } = this.props;
 
-    	if(this.state.editing)
+    	if(this.state.saving)
+    	{
+    		return (
+				<div className="card card-outline-info"> 
+	              	<div className="card-block centered">
+	              		<h4 className="card-title">
+	                		<Icon name="circle-o-notch fa-pulse fa-fw" />
+	                		&nbsp;Saving...
+	                	</h4>
+	              	</div>
+	            </div>
+    		);
+    	}
+    	else if(this.state.editing)
     	{
     		return ( 
 
@@ -264,7 +279,7 @@ class Card extends Component {
 
 	       );
     	}
-    	else
+    	else if(this.state.visible)
     	{
 	        return connectDragSource(
 	            <div className="card card-outline-info"> 
@@ -303,6 +318,10 @@ class Card extends Component {
 	            </div>
 
 	        );
+	    }
+	    else 
+	    {
+	    	return <div></div>;
 	    }
     }
 

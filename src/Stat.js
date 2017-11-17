@@ -15,7 +15,6 @@ class Stat extends Component {
         for(var i=0;i<3;i++) {
             result[i] = Math.round(startColor[i] + (endColor[i] - startColor[i]) * fraction);
         }
-        console.log("rgb(" + result.join(",") + ")");
         this.setState({color: "rgb(" + result.join(",") + ")"});
     }
 

@@ -25,29 +25,43 @@ class App extends Component {
 	        ],
 	        cards: []
 	    }
+        this.poll = this.poll.bind(this);
+        this.hideCard = this.hideCard.bind(this);
 	}    
 
     componentDidMount() {
-        this.startPolling();
+        this.poll();
     }
 
+    /* DEPRECATED -- Poll happens on changes only!
     startPolling() {
     	var self = this;
    		self.poll();
    		self._timer = setInterval(self.poll.bind(self), 15000);
     }
+    */
 
     poll() {
     	jQuery.get("https://api.trello.com/1/boards/kNrLkVPc/cards?fields=name,desc,due,labels,idList&key="+Authentication.TrelloKey+"&token="+Authentication.TrelloToken)
             .then(result => {
-            
                 result.sort(function(a,b) {
                     var aDue = (a.due) ? new Date(a.due).getTime() : 0;
                     var bDue = (b.due) ? new Date(b.due).getTime() : 0;
                     return aDue - bDue;
                 })  
+                this.setState({cards: []});
                 this.setState({cards: result});
         });
+    }
+
+    hideCard(id) {
+        var cardIndex = this.state.cards.map(function(card) { return card.id; }).indexOf(id);
+        if(cardIndex > -1) {
+            this.state.cards.splice(cardIndex, 1);
+        }
+        else {
+            alert('Error: Tried to hide a non-existant card.');
+        }
     }
 
    	componentWillUnmount() {
@@ -63,7 +77,7 @@ class App extends Component {
                 <div className="container-fluid" id="board">
                     <div className="row">
                         {this.state.columns.map(column => (
-                            <Column title={column.title} className={column.title} key={column.id} id={column.id} cards={this.state.cards} poll={this.poll} />
+                            <Column title={column.title} className={column.title} key={column.id} id={column.id} cards={this.state.cards} poll={this.poll} hideCard={this.hideCard} />
                         ))}
                     </div>
                 </div>

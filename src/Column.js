@@ -7,31 +7,24 @@ import jQuery from 'jquery';
 import { DropTarget } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
 
-function move(cardId, columnId) {
+function move(cardId, columnId, pollFunction, hideFunction) {
 
     var params = {
         key: Authentication.TrelloKey,
         token: Authentication.TrelloToken,
         idList: columnId
     }
+    hideFunction(cardId);
      jQuery.ajax({
             type: 'PUT',
             url: "https://api.trello.com/1/cards/"+cardId,
             data: params,
             success: function() {
-                window.location.reload();
-//              self.props.poll();
-
-                /*self.setState({
-                    title: form.name.value,
-                    estimated: form.estimated.value,
-                    due: due,
-                    editing: false,
-                    duePretty: (due) ? Moment(due).format("ddd M/D h:mma") : "TBD"
-                });*/
+                pollFunction();
             },
             error: function(xhr) {
-                alert("Error saving your changes: "+xhr.responseText);
+                pollFunction();
+                alert("Error moving card: "+xhr.responseText);
             }
         })
 }
@@ -46,7 +39,7 @@ const columnTarget = {
     },
     drop(props, monitor, component) {
         const card = monitor.getItem();
-        move(card.id, props.id);
+        move(card.id, props.id, props.poll, props.hideCard);
     }
 
 }
@@ -97,6 +90,7 @@ class Column extends Component {
     }
 
     archiveDone() {
+        var self = this;
         if(window.confirm("Are you sure you want to archive all \"done\" cards?")) {
             var type = "POST";
             var url = "https://api.trello.com/1/lists/"+this.props.id+"/archiveAllCards";
@@ -110,10 +104,10 @@ class Column extends Component {
                 url: url,
                 data: params,
                 success: function() {
-                    window.location.reload();
+                    self.props.poll();
                 },
                 error: function(xhr) {
-                    alert("Error saving your changes: "+xhr.responseText);
+                    alert("Error archiving cards: "+xhr.responseText);
                 }
             })
         }        
@@ -156,6 +150,7 @@ class Column extends Component {
                         id={card.id}
                         poll={this.props.poll}
                         priority={this.props.prioirty}
+                        hideCard={this.hideCard}
                     />
                 ))}
                
