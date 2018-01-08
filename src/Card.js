@@ -242,11 +242,11 @@ class Card extends Component {
 		                <h6 className="card-subtitle mb-2 text-muted">
 		                    <select name="label" defaultValue={this.props.subtitleId}>
 		                    	<option value=""></option>
-		                    	<option value="598fa18d1314a339991101ae">Signals &amp; Systems</option>
-								<option value="598fa18d1314a339991101b1">Conducting</option>
+		                    	<option value="598fa18d1314a339991101af">Human-Computer Interaction</option>
+								<option value="598fa18d1314a339991101ae">Digital Design</option>
+		                    	<option value="598fa18d1314a339991101b1">Machine Learning</option>
 		                    	<option value="598fa18d1314a339991101b0">Senior Design</option>
-		                    	<option value="598fa18d1314a339991101b2">Statics</option>
-		                    	<option value="598fa18d1314a339991101af">Operating Systems</option>
+		                    	<option value="598fa18d1314a339991101b2">Statistics</option>
 		                    	<option value="598fa18d1314a339991101b3">Internships 2018</option>
 		                    	<option value="598faa081314a339991107e4">Life</option>                 	
 	                    	</select>
