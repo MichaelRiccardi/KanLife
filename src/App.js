@@ -23,7 +23,8 @@ class App extends Component {
 	            { title: "On Hold", id: "598fa30575e5b628c02ea25b" },
 	            { title: "Done", id: "598fa308e4d27b60e4f31afd" }
 	        ],
-	        cards: []
+	        cards: [],
+            labels: [],
 	    }
         this.poll = this.poll.bind(this);
         this.hideCard = this.hideCard.bind(this);
@@ -31,6 +32,7 @@ class App extends Component {
 
     componentDidMount() {
         this.poll();
+        this.getLabels();
     }
 
     /* DEPRECATED -- Poll happens on changes only!
@@ -40,6 +42,17 @@ class App extends Component {
    		self._timer = setInterval(self.poll.bind(self), 15000);
     }
     */
+
+    getLabels() {
+        jQuery.get("https://api.trello.com/1/boards/kNrLkVPc/?labels=all&fields=id&key="+Authentication.TrelloKey+"&token="+Authentication.TrelloToken)
+            .then(result => {
+                let labels = result.labels;
+                labels.sort(function(a,b) {
+                    return a.name.localeCompare(b.name);
+                });
+                this.setState({labels});
+            });
+    }
 
     poll() {
     	jQuery.get("https://api.trello.com/1/boards/kNrLkVPc/cards?fields=name,desc,due,labels,idList&key="+Authentication.TrelloKey+"&token="+Authentication.TrelloToken)
@@ -77,7 +90,7 @@ class App extends Component {
                 <div className="container-fluid" id="board">
                     <div className="row">
                         {this.state.columns.map(column => (
-                            <Column title={column.title} className={column.title} key={column.id} id={column.id} cards={this.state.cards} poll={this.poll} hideCard={this.hideCard} />
+                            <Column title={column.title} className={column.title} key={column.id} id={column.id} cards={this.state.cards} poll={this.poll} hideCard={this.hideCard} labels={this.state.labels} />
                         ))}
                     </div>
                 </div>

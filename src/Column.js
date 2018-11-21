@@ -135,6 +135,7 @@ class Column extends Component {
                         priority={this.props.prioirty}
                         isNew
                         cancelNewCard={this.cancelNewCard}
+                        labels={this.props.labels}
                     />
                 )}
                 
@@ -151,6 +152,7 @@ class Column extends Component {
                         poll={this.props.poll}
                         priority={this.props.prioirty}
                         hideCard={this.hideCard}
+                        labels={this.props.labels}
                     />
                 ))}
                
