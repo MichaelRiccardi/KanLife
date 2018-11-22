@@ -166,7 +166,7 @@ class Card extends Component<Props, State> {
     	}
 
     	if(estimatedField !== "" && estimatedField !== "TBD") {
-    		estimated = "\n{est=" + estimated + "=est}";
+    		estimated = "\n{est=" + estimatedField + "=est}";
     	}
 
     	var due = null;
