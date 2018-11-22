@@ -1,7 +1,7 @@
 // @flow
 
 const Types = {
-	CARD: 'card'
+  CARD: "card"
 };
 
 export default Types;
