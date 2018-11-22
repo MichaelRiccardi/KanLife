@@ -1,13 +1,16 @@
+// @flow
+
 import React, { Component } from 'react';
 
-class Icon extends Component {
+type Props = {
+    name: string,
+}
 
-    state = {
-        classNames: "fa fa-"+this.props.name
-    }
+class Icon extends Component<Props> {
+
     render() {
         return (
-            <i className={this.state.classNames} aria-hidden="true"></i>
+            <i className={"fa fa-"+this.props.name} aria-hidden="true"></i>
         );
     }
 }

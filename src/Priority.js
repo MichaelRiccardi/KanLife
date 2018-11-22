@@ -1,14 +1,18 @@
+// @flow
+
 import React, { Component } from 'react';
 import Icon from './Icon.js';
 
-class Priority extends Component {
+type Props = {
+    level: number,
+}
 
-    state = {
-        classNames: (this.props.level > 0) ? "fa fa-"+(["arrow-down","arrow-up","star","ban"][this.props.level-1]) : ""
-    }
+class Priority extends Component<Props> {
+
     render() {
+        const classNames =  (this.props.level > 0) ? "fa fa-"+(["arrow-down","arrow-up","star","ban"][this.props.level-1]) : "";
         return (
-            <i className={this.state.classNames} aria-hidden="true"></i>
+            <i className={classNames} aria-hidden="true"></i>
         );
     }
 }

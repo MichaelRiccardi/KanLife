@@ -1,3 +1,5 @@
+// @flow
+
 import React, { Component } from 'react';
 import Card from './Card.js'
 import Types from './Types.js'
@@ -28,7 +30,7 @@ function move(cardId, columnId, pollFunction, hideFunction) {
             }
         })
 }
-       
+
 
 const columnTarget = {
     canDrop(props, monitor) {
@@ -57,8 +59,24 @@ function collect(connect, monitor) {
   };
 }
 
+type Props = {
+    connectDropTarget: any,
+    isOver: any,
+    title: string,
+    poll: Function,
+    id: string,
+    priority: number,
+    hideCard: Function,
+    labels: Array<Object>,
+    cards: Array<Object>,
+}
 
-class Column extends Component {
+type State = {
+    classNames: string,
+    newCard: Array<Object>,
+}
+
+class Column extends Component<Props, State> {
 
     constructor(props) {
         super();
@@ -66,12 +84,9 @@ class Column extends Component {
             classNames: "col " + props.title,
             newCard: []
         }
-        this.addNewCard = this.addNewCard.bind(this);
-        this.cancelNewCard = this.cancelNewCard.bind(this);
-        this.archiveDone = this.archiveDone.bind(this);
     }
 
-    addNewCard() {
+    addNewCard = () => {
         if(this.state.newCard.length == 0)
         {
             const blankCard = {
@@ -85,11 +100,11 @@ class Column extends Component {
         }
     }
 
-    cancelNewCard() {
+    cancelNewCard = () => {
         this.setState({ newCard : [] });
     }
 
-    archiveDone() {
+    archiveDone = () => {
         var self = this;
         if(window.confirm("Are you sure you want to archive all \"done\" cards?")) {
             var type = "POST";
@@ -110,9 +125,9 @@ class Column extends Component {
                     alert("Error archiving cards: "+xhr.responseText);
                 }
             })
-        }        
+        }
     }
-    
+
     render() {
         const { connectDropTarget, isOver } = this.props;
         return connectDropTarget(
@@ -129,18 +144,18 @@ class Column extends Component {
                         subtitleId={(card.labels[0] ? card.labels[0].id : "")}
                         description={card.desc}
                         due={card.due}
-                        key={this.props.id}
+                        key={card.id}
                         listId={this.props.id}
                         poll={this.props.poll}
-                        priority={this.props.prioirty}
+                        priority={this.props.priority}
                         isNew
                         cancelNewCard={this.cancelNewCard}
                         labels={this.props.labels}
                     />
                 )}
-                
+
                 {this.props.cards
-                    .filter(card => card.idList === this.props.id )                 
+                    .filter(card => card.idList === this.props.id )
                     .map(card => (
                     <Card title={card.name}
                         subtitle={(card.labels[0]) ? card.labels[0].name : ""}
@@ -150,13 +165,13 @@ class Column extends Component {
                         key={card.id}
                         id={card.id}
                         poll={this.props.poll}
-                        priority={this.props.prioirty}
-                        hideCard={this.hideCard}
+                        priority={this.props.priority}
+                        hideCard={this.props.hideCard}
                         labels={this.props.labels}
                     />
                 ))}
-               
-            </div>    
+
+            </div>
         );
     }
 }

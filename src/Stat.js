@@ -1,16 +1,38 @@
+// @flow
+
 import React, { Component } from 'react';
 import Moment from 'moment';
 
 import Icon from './Icon.js';
 
-class Stat extends Component {
-    
-    state = {
-        classNames: "card-link",
-        color: false
+type Props = {
+    value: string,
+    due?: ?string,
+    type?: string,
+    scheduled?: ?Date,
+    editing?: ?boolean,
+    icon: string,
+    value: string,
+    scheduledStart?: ?any, // Moment
+    scheduledEnd?: ?any, // Moment
+}
+
+type State = {
+    classNames: string,
+    color: string,
+}
+
+class Stat extends Component<Props, State> {
+
+    constructor() {
+        super();
+        this.state = {
+            classNames: "card-link",
+            color: "",
+        };
     }
 
-    pickFromGradient(startColor, endColor, fraction) {
+    pickFromGradient = (startColor: Array<number>, endColor: Array<number>, fraction: number) => {
         var result = [];
         for(var i=0;i<3;i++) {
             result[i] = Math.round(startColor[i] + (endColor[i] - startColor[i]) * fraction);
@@ -23,7 +45,7 @@ class Stat extends Component {
         {
             this.setState({classNames: "card-link highlight tbd"});
         }
-        else if(this.props.due)
+        else if(this.props.due != null)
         {
             if(Moment(new Date()).isAfter(this.props.due))
             {
@@ -38,9 +60,9 @@ class Stat extends Component {
                 var fraction = (Moment(this.props.due).diff(Moment(new Date()), 'hours') - 24) / (6*24);
                 this.pickFromGradient([0xFF, 0xFF, 0x00], [0x00, 0xFF, 0x00], fraction);
                 this.setState({classNames: "card-link highlight due-this-week"});
-            }            
+            }
         }
-        if(this.props.scheduled)
+        if(this.props.scheduled != null)
         {
             if(Moment(new Date()).isAfter(this.props.scheduled))
             {
@@ -79,9 +101,9 @@ class Stat extends Component {
     			break;
 
     			case 'event':
-    				var scheduledDate = (this.props.scheduledStart) ? this.props.scheduledStart.format("YYYY-MM-DD") : null;
-    				var start = (this.props.scheduledStart) ? this.props.scheduledStart.format("HH:mm:00") : null;
-    				var end = (this.props.scheduledEnd) ? this.props.scheduledEnd.format("HH:mm:00") : null;
+    				var scheduledDate = (this.props.scheduledStart != null) ? this.props.scheduledStart.format("YYYY-MM-DD") : null;
+    				var start = (this.props.scheduledStart != null) ? this.props.scheduledStart.format("HH:mm:00") : null;
+    				var end = (this.props.scheduledEnd != null) ? this.props.scheduledEnd.format("HH:mm:00") : null;
 
     				editField = <span>
     								<input type="date" name="scheduledDate" defaultValue={scheduledDate} /><br />
@@ -96,7 +118,7 @@ class Stat extends Component {
 
     		}
 
-    		return ( 
+    		return (
     			<div className="form-group">
 	                <Icon name={this.props.icon} />
 	                {editField}
@@ -104,7 +126,7 @@ class Stat extends Component {
     		);
     	}
     	else {
-            var styleObj = (!this.state.color) ? {} : {
+            var styleObj = (this.state.color === "") ? {} : {
                 backgroundColor: this.state.color
             };
 	        return (

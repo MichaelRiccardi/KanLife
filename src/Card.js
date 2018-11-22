@@ -1,3 +1,5 @@
+// @flow
+
 import React, { Component } from 'react';
 import Authentication from './authentication.js';
 import Moment from 'moment';
@@ -44,7 +46,44 @@ function collect(connect, monitor) {
 	}
 }
 
-class Card extends Component {
+type Props = {
+	id: string,
+	title: string,
+	subtitle: string,
+	subtitleId: string,
+	description: string,
+	due: Date,
+	key: string,
+	listId: string,
+	poll: Function,
+	priority: number,
+	isNew: boolean,
+	cancelNewCard: Function,
+	labels: Array<Object>,
+	isDragging: any,
+	connectDragSource: any,
+};
+
+type State = {
+	cycle: string,
+	due: string,
+	duePretty: string,
+	estimated: string,
+	scheduled: string,
+	scheduledDate: ?any,
+	scheduledStart: ?any,
+	scheduledEnd: ?any,
+	description: string,
+	editing: boolean,
+	title: string,
+	subtitle: string,
+	link: ?string,
+	priority: number,
+	saving: boolean,
+	visible: boolean,
+}
+
+class Card extends Component<Props, State> {
 
 	constructor(props) {
 		super();
@@ -83,11 +122,15 @@ class Card extends Component {
 	    this.delete = this.delete.bind(this);
 	}
 
-    edit() {
+    edit = () => {
     	this.setState({editing: true});
     }
 
-    updateCard(e) {
+		getField = (form: HTMLFormElement, field: string) => {
+			return (form[field] instanceof HTMLInputElement) ? form[field].value : "";
+		}
+
+    updateCard = (e: Event) => {
     	e.preventDefault();
 
     	var self = this;
@@ -100,43 +143,53 @@ class Card extends Component {
     	var link = "";
     	var priority = "";
 
-    	if(form.scheduledDate.value !== "" && //"2017-08-27"
-			form.scheduledTimeStart.value !== "" &&
-			form.scheduledTimeEnd.value !== "") {
+		var scheduledDate = this.getField(form, "scheduledDate");
+		var scheduledTimeStart = this.getField(form, "scheduledTimeStart");
+		var scheduledTimeEnd = this.getField(form, "scheduledTimeEnd");
+		var estimatedField = this.getField(form, "estimated");
+		var dueDate = this.getField(form, "dueDate");
+		var dueTime = this.getField(form, "dueTime");
+		var linkField = this.getField(form, "link");
+		var priorityField = this.getField(form, "priority");
+		var label = this.getField(form, "label");
+		var name = this.getField(form, "name");
+		var desc = this.getField(form, "desc");
 
-    		var start = Moment(form.scheduledDate.value+" "+form.scheduledTimeStart.value).add(utcOffset, 'hours');
-    		var end = Moment(form.scheduledDate.value+" "+form.scheduledTimeEnd.value).add(utcOffset, 'hours');
+  	if(scheduledDate !== "" && //"2017-08-27"
+			scheduledTimeStart !== "" &&
+			scheduledTimeEnd !== "") {
+
+    		var start = Moment(scheduledDate+" "+scheduledTimeStart).add(utcOffset, 'hours');
+    		var end = Moment(scheduledDate+" "+scheduledTimeEnd).add(utcOffset, 'hours');
 
     		scheduled = "\n{sch=" + Moment(start).format("YYYY-MM-DDTHH:mm:00[Z]") + "|" + Moment(end).format("YYYY-MM-DDTHH:mm:00[Z]") + "=sch}";
     	}
 
-    	if(form.estimated.value !== "" && form.estimated.value !== "TBD") {
-    		estimated = "\n{est=" + form.estimated.value + "=est}";
+    	if(estimatedField !== "" && estimatedField !== "TBD") {
+    		estimated = "\n{est=" + estimated + "=est}";
     	}
 
     	var due = null;
-    
-		if(form.dueDate.value !== "" &&
-			form.dueTime.value !== "") {
 
-    		due = Moment(form.dueDate.value+" "+form.dueTime.value);//.add(utcOffset, 'hours');
+		if(dueDate !== "" && dueTime !== "") {
+    		due = Moment(dueDate+" "+dueTime);//.add(utcOffset, 'hours');
     		//due = Moment(due).format("YYYY-MM-DDTHH:mm:00[Z]");
     	}
 
-    	if(form.link.value.indexOf("http") === 0) {
-    		link = "\n{url=" + form.link.value + "=url}";
+    	if(linkField.indexOf("http") === 0) {
+    		link = "\n{url=" + linkField + "=url}";
     	}
 
-    	if(form.priority.value != "0") {
-    		priority = "\n{pri=" + form.priority.value + "=pri}";
+    	if(priorityField != "0") {
+    		priority = "\n{pri=" + priorityField + "=pri}";
     	}
 
     	var params = {
     		key: Authentication.TrelloKey,
     		token: Authentication.TrelloToken,
-    		idLabels: form.label.value,
-    		name: form.name.value,
-    		desc: form.desc.value + scheduled + estimated + link + priority,
+    		idLabels: label,
+    		name: name,
+    		desc: desc + scheduled + estimated + link + priority,
     		due: (due) ? due.toDate() : null
     	}
 
@@ -149,7 +202,7 @@ class Card extends Component {
     	}
     	else {
     		type = "PUT";
-    		url = "https://api.trello.com/1/cards/"+this.props.id; 
+    		url = "https://api.trello.com/1/cards/"+this.props.id;
     	}
 
     	this.setState({saving: true});
@@ -173,16 +226,16 @@ class Card extends Component {
     	})
     }
 
-    cancelEdit() {
+    cancelEdit = () => {
     	if(this.props.isNew) {
     		this.props.cancelNewCard();
     	}
     	else {
-    		this.setState({editing: false});	
+    		this.setState({editing: false});
     	}
     }
 
-    delete() {
+    delete = () => {
     	var self = this;
     	if(window.confirm("Are you sure you want to delete this card?")) {
     		var params = {
@@ -217,7 +270,7 @@ class Card extends Component {
     	if(this.state.saving)
     	{
     		return (
-				<div className="card card-outline-info"> 
+				<div className="card card-outline-info">
 	              	<div className="card-block centered">
 	              		<h4 className="card-title">
 	                		<Icon name="circle-o-notch fa-pulse fa-fw" />
@@ -229,10 +282,10 @@ class Card extends Component {
     	}
     	else if(this.state.editing)
     	{
-    		return ( 
+    		return (
 
     			<form id={"edit-"+this.props.id} onSubmit={this.updateCard}>
-	    			<div className="card card-outline-info"> 
+	    			<div className="card card-outline-info">
 		              <div className="card-block">
 
 		                <h4 className="card-title">
@@ -242,9 +295,9 @@ class Card extends Component {
 		                <h6 className="card-subtitle mb-2 text-muted">
 		                    <select name="label" defaultValue={this.props.subtitleId}>
 		                    	<option value=""></option>
-		                    	{this.props.labels.map(label => 
+		                    	{this.props.labels.map(label =>
 		                    		<option value={label.id}>{label.name}</option>
-		                    	)}             	
+		                    	)}
 	                    	</select>
 	                    	<select name="priority" defaultValue={this.state.priority}>
 	                    		<option value="0"></option>
@@ -263,8 +316,8 @@ class Card extends Component {
 		                <Stat icon="clock-o" type="text" value={this.state.estimated} editing />
 		                <Stat icon="calendar" type="event" value={this.state.scheduled} scheduledStart={this.state.scheduledStart} scheduledEnd={this.state.scheduledEnd} editing />
 		                  {/*<Stat icon="refresh" value={this.state.cycle}*/}
-		                <Stat icon="inbox" type="date-time" value={this.state.duePretty} due={this.state.due} editing />
-		                
+		                <Stat icon="inbox" type="date-time" value={this.state.duePretty} due={this.state.due} editing scheduledStart={null} scheduledEnd={null} scheduled={null} />
+
 		                <input className="btn btn-success" type="submit" value="&#10004;" />
 		                <input className="btn btn-danger" type="button" value="X" onClick={this.cancelEdit} />
 		                {this.props.isNew || <input className="btn btn-basic" type="button" value="&#128465;" onClick={this.delete} />}
@@ -278,9 +331,9 @@ class Card extends Component {
     	else if(this.state.visible)
     	{
 	        return connectDragSource(
-	            <div className="card card-outline-info"> 
+	            <div className="card card-outline-info">
 	        	{!isDragging && (
-	            
+
 	              <div className="card-block">
 
 	                <h4 className="card-title">
@@ -308,14 +361,14 @@ class Card extends Component {
 	                <Stat icon="inbox" value={this.state.duePretty} due={this.state.due} />
 
 	              </div>
-	            
+
 
 	            )}
 	            </div>
 
 	        );
 	    }
-	    else 
+	    else
 	    {
 	    	return <div></div>;
 	    }

@@ -1,3 +1,5 @@
+// @flow
+
 const Types = {
 	CARD: 'card'
 };
