@@ -127,7 +127,9 @@ class Card extends Component<Props, State> {
     }
 
 		getField = (form: HTMLFormElement, field: string) => {
-			return (form[field] instanceof HTMLInputElement) ? form[field].value : "";
+      var element = form[field];
+			return (element instanceof HTMLInputElement ||
+        element instanceof HTMLSelectElement) ? form[field].value : "";
 		}
 
     updateCard = (e: Event) => {
@@ -166,7 +168,7 @@ class Card extends Component<Props, State> {
     	}
 
     	if(estimatedField !== "" && estimatedField !== "TBD") {
-    		estimated = "\n{est=" + estimated + "=est}";
+    		estimated = "\n{est=" + estimatedField + "=est}";
     	}
 
     	var due = null;
