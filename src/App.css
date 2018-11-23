@@ -1,46 +1,45 @@
-.root, html {
-    background-color: #f5f5f5;
+.root,
+html {
+  background-color: #f5f5f5;
 }
 
-h4 input, textarea {
-    width: 100%;
-}
-
+h4 input,
 textarea {
-
+  width: 100%;
 }
 
-code { 
-    background-color: yellow !important;
-    color: black !important; 
-    font-family: -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif !important;
-    font-size: inherit !important;
+code {
+  background-color: yellow !important;
+  color: black !important;
+  font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif !important;
+  font-size: inherit !important;
 }
 
 input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    display: none;
+  -webkit-appearance: none;
+  display: none;
 }
 
-input[type=date], input[type=time] {
+input[type="date"],
+input[type="time"] {
   border: 2px black !important;
   font-size: 1em;
 }
 
-input[type=date] {
-  width:40%;
-  
+input[type="date"] {
+  width: 40%;
 }
 
-input[type=time] {
-  width:30%;
+input[type="time"] {
+  width: 30%;
 }
 
 .btn {
-  float:right;
+  float: right;
   margin-top: -1em;
   margin-left: 0.4em;
-  cursor:pointer;
+  cursor: pointer;
 }
 
 .new-button {
@@ -48,149 +47,129 @@ input[type=time] {
 }
 
 .root .card {
-    background-color: white;
-    border-radius: 1em;
-    /*cursor: move;*/
-    margin: 1em 0 1em 0;
+  background-color: white;
+  border-radius: 1em;
+  margin: 1em 0 1em 0;
 }
 
 .card:hover {
-    background-color: #d6e6ff;
+  background-color: #d6e6ff;
 }
 
-.card-priority, .card-edit {
-    float: right;
-    padding-left: 0.3em;
-    padding-bottom: 0.3em;
+.card-priority,
+.card-edit {
+  float: right;
+  padding-left: 0.3em;
+  padding-bottom: 0.3em;
 }
 
 .card .card-edit {
-   display: none;
+  display: none;
 }
 
 .card:hover .card-edit {
-   display: inherit;
-   float: right;
-   color: #555;
-   cursor: pointer;
+  display: inherit;
+  float: right;
+  color: #555;
+  cursor: pointer;
 }
 
 .card:hover .card-priority {
-    display: none;
+  display: none;
 }
 
 .card-edit {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 .card-edit:hover {
-    background-color: #c7dbf9;
+  background-color: #c7dbf9;
 }
 
 .card-link {
-    padding: 0 0em 0 0em;
-    white-space: nowrap;
+  padding: 0 0em 0 0em;
+  white-space: nowrap;
 }
 
 .card-text {
-    white-space: pre-line;
+  white-space: pre-line;
 }
 
 .done > .tbd {
-    background: none !important;
-    border: none;
-    padding: 0;
-    margin: 0;
+  background: none !important;
+  border: none;
+  padding: 0;
+  margin: 0;
 }
 
 .highlight {
-    border-radius: 20px;
-    padding-left: 0.5em;
-    padding-right: 0.5em;
-    margin-left: -0.5em;
-    margin-right: -0.5em;
+  border-radius: 20px;
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+  margin-left: -0.5em;
+  margin-right: -0.5em;
 }
 
 .tbd {
-    background: #ff99ff;
+  background: #ff99ff;
 }
 
-.Done .tbd, .Done .due-24-hours {
-    background: none !important;
+.Done .tbd,
+.Done .due-24-hours {
+  background: none !important;
 }
 
 .due-24-hours {
-    background: yellow;
+  background: yellow;
 }
 
-.Open .past-due, .Scheduled .tbd, .Scheduled .past-scheduled, .Scheduled .past-due, .Progress .past-due, .Hold .past-due {
-    background: red;
-    color: white;
-}
-
-.blue {
-    background: #66d9ff;
-}
-
-.due-this-week {
-    background: #99ff99;
-}
-.Done .due-this-week {
-    background: none !important;
-}
-
-h2 {
-    text-align: center;
-    padding: 0.5em;
-}
-
-.my-card {
-    border: 5px black;
-    border-radius: 0.33em;
-}
-
-.fa {
-    padding-right: 0.3em;
-}
-
-.fa-ban {
-    color: red;
-}
-
-.fa-star {
-    color: #ffcc00;
-}
-
-.fa-arrow-up {
-    color: #00e600;
-}
-
-.fa-arrow-down {
-    color: #0099ff;
-}
-
-/*.App {
-  text-align: center;
-}
-
-.App-logo {
-  animation: App-logo-spin infinite 20s linear;
-  height: 80px;
-}
-
-.App-header {
-  background-color: #222;
-  height: 150px;
-  padding: 20px;
+.Open .past-due,
+.Scheduled .tbd,
+.Scheduled .past-scheduled,
+.Scheduled .past-due,
+.Progress .past-due,
+.Hold .past-due {
+  background: red;
   color: white;
 }
 
-.App-intro {
-  font-size: large;
+.blue {
+  background: #66d9ff;
 }
 
-@keyframes App-logo-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+.due-this-week {
+  background: #99ff99;
 }
-*/
+.Done .due-this-week {
+  background: none !important;
+}
+
+h2 {
+  text-align: center;
+  padding: 0.5em;
+}
+
+.my-card {
+  border: 5px black;
+  border-radius: 0.33em;
+}
+
+.fa {
+  padding-right: 0.3em;
+}
+
+.fa-ban {
+  color: red;
+}
+
+.fa-star {
+  color: #ffcc00;
+}
+
+.fa-arrow-up {
+  color: #00e600;
+}
+
+.fa-arrow-down {
+  color: #0099ff;
+}
