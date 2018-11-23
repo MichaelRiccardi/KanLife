@@ -228,7 +228,7 @@ class Card extends Component<Props, State> {
       link = "\n{url=" + linkField + "=url}";
     }
 
-    if (priorityField != "0") {
+    if (priorityField !== "0") {
       priority = "\n{pri=" + priorityField + "=pri}";
     }
 
@@ -426,7 +426,11 @@ class Card extends Component<Props, State> {
             <div className="card-block">
               <h4 className="card-title">
                 {this.state.link && (
-                  <a href={this.state.link} target="_blank">
+                  <a
+                    href={this.state.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     {this.state.title}
                   </a>
                 )}

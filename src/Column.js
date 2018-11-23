@@ -7,7 +7,6 @@ import Types from "./Types.js";
 import Authentication from "./authentication.js";
 import jQuery from "jquery";
 import { DropTarget } from "react-dnd";
-import HTML5Backend from "react-dnd-html5-backend";
 
 function move(cardId, columnId, pollFunction, hideFunction) {
   var params = {
@@ -83,7 +82,7 @@ class Column extends Component<Props, State> {
   }
 
   addNewCard = () => {
-    if (this.state.newCard.length == 0) {
+    if (this.state.newCard.length === 0) {
       const blankCard = {
         title: "",
         labels: [],
@@ -125,7 +124,7 @@ class Column extends Component<Props, State> {
   };
 
   render() {
-    const { connectDropTarget, isOver } = this.props;
+    const { connectDropTarget } = this.props;
     return connectDropTarget(
       <div className={this.state.classNames}>
         <h2>
@@ -136,7 +135,7 @@ class Column extends Component<Props, State> {
             value="+"
             onClick={this.addNewCard}
           />
-          {this.props.title == "Done" ? (
+          {this.props.title === "Done" ? (
             <input
               className="btn btn-success new-button"
               type="button"

@@ -9,12 +9,11 @@ type Props = {
 
 class Priority extends Component<Props> {
   render() {
-    const classNames =
-      this.props.level > 0
-        ? "fa fa-" +
-          ["arrow-down", "arrow-up", "star", "ban"][this.props.level - 1]
-        : "";
-    return <i className={classNames} aria-hidden="true" />;
+    return (
+      <Icon
+        name={["", "arrow-down", "arrow-up", "star", "ban"][this.props.level]}
+      />
+    );
   }
 }
 
