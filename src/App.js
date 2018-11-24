@@ -12,40 +12,40 @@ import { DragDropContext } from "react-dnd";
 import HTML5Backend from "react-dnd-html5-backend";
 
 import Column from "./Column.js";
+import type ColumnType from "./Column.js";
 
 type Props = {};
 
+type LabelType = {
+  name: string,
+  id: string,
+};
+
 type State = {
-  columns: Array<Object>,
+  columns: Array<ColumnType>,
   cards: Array<Object>,
-  labels: Array<Object>
+  labels: Array<LabelType>,
 };
 
 class App extends Component<Props, State> {
   constructor(props) {
     super();
     this.state = {
-      columns: [
-        { title: "Open", id: "598fa1bee1a7e2a5587befc3" },
-        { title: "Scheduled", id: "598fa1c7ddb0ea0cc4c5773e" },
-        { title: "In Progress", id: "598fa2fe443be451928c95d3" },
-        { title: "On Hold", id: "598fa30575e5b628c02ea25b" },
-        { title: "Done", id: "598fa308e4d27b60e4f31afd" }
-      ],
+      columns: [],
       cards: [],
-      labels: []
+      labels: [],
     };
   }
 
   componentDidMount() {
     this.poll();
-    this.getLabels();
+    this.getColumnsAndLabels();
   }
 
-  getLabels() {
+  getColumnsAndLabels() {
     jQuery
       .get(
-        "https://api.trello.com/1/boards/kNrLkVPc/?labels=all&fields=id&key=" +
+        "https://api.trello.com/1/boards/kNrLkVPc/?labels=all&lists=open&key=" +
           Authentication.TrelloKey +
           "&token=" +
           Authentication.TrelloToken
@@ -55,7 +55,8 @@ class App extends Component<Props, State> {
         labels.sort(function(a, b) {
           return a.name.localeCompare(b.name);
         });
-        this.setState({ labels });
+        const columns = result.lists;
+        this.setState({ labels, columns });
       });
   }
 
@@ -98,8 +99,8 @@ class App extends Component<Props, State> {
           <div className="row">
             {this.state.columns.map(column => (
               <Column
-                title={column.title}
-                className={column.title}
+                title={column.name}
+                className={column.name}
                 key={column.id}
                 id={column.id}
                 cards={this.state.cards}

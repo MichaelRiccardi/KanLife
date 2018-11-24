@@ -8,6 +8,11 @@ import Authentication from "./authentication.js";
 import jQuery from "jquery";
 import { DropTarget } from "react-dnd";
 
+export type ColumnType = {
+  name: string,
+  id: string,
+};
+
 function move(cardId, columnId, pollFunction, hideFunction) {
   var params = {
     key: Authentication.TrelloKey,
