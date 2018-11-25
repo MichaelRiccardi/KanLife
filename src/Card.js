@@ -51,6 +51,15 @@ export type CardType = {
   due: string,
 };
 
+type CardDetailType = {
+  description: ?string,
+  scheduledStart: ?Date,
+  scheduledEnd: ?Date,
+  estimated: ?string,
+  link: ?string,
+  priority: ?number,
+}
+
 type Props = {
   id: string,
   title: string,
@@ -59,9 +68,7 @@ type Props = {
   description: string,
   due: Date,
   key: string,
-  // listId: ?string,
   poll: Function,
-  //priority: number,
   isNew: boolean,
   cancelNewCard: Function,
   labels: Array<LabelType>,
@@ -70,20 +77,11 @@ type Props = {
 };
 
 type State = {
-  cycle: string,
   due: string,
-  duePretty: string,
-  estimated: string,
-  scheduled: string,
-  scheduledDate: ?any,
-  scheduledStart: ?any,
-  scheduledEnd: ?any,
-  description: string,
+  details: CardDetailType,
   editing: boolean,
   title: string,
   subtitle: string,
-  link: ?string,
-  priority: number,
   saving: boolean,
   visible: boolean
 };
@@ -91,72 +89,27 @@ type State = {
 class Card extends Component<Props, State> {
   constructor(props) {
     super();
+    let details = null;
+    try {
+      details = JSON.parse(props.description);
+      details.scheduledStart = details.scheduledStart ? Moment(details.scheduledStart) : null;
+      details.scheduledEnd = details.scheduledEnd ? Moment(details.scheduledEnd) : null;
+    } catch {
+      details = {
+        description: null,
+        scheduledStart: null,
+        scheduledEnd: null,
+        estimated: null,
+        link: null,
+        priority: null,
+      };
+    }
     this.state = {
-      cycle: Math.floor(Math.random() * 60) + "min",
       due: props.due,
-      duePretty: props.due ? Moment(props.due).format("ddd M/D h:mma") : "TBD",
-      estimated:
-        props.description.indexOf("{est=") > -1
-          ? props.description.substring(
-              props.description.indexOf("{est=") + 5,
-              props.description.indexOf("=est}")
-            )
-          : "TBD",
-      scheduled:
-        props.description.indexOf("{sch=") > -1
-          ? Moment(
-              props.description.substring(
-                props.description.indexOf("{sch=") + 5,
-                props.description.indexOf("{sch=") + 5 + 20
-              )
-            ).format("ddd M/D h:mma")
-          : "TBD",
-      scheduledDate: Moment(
-        props.description.substring(
-          props.description.indexOf("{sch=") + 5,
-          props.description.indexOf("{sch=") + 5 + 20
-        )
-      ),
-      scheduledStart:
-        props.description.indexOf("{sch=") > -1
-          ? Moment(
-              props.description.substring(
-                props.description.indexOf("{sch=") + 5,
-                props.description.indexOf("{sch=") + 5 + 20
-              )
-            )
-          : null,
-      scheduledEnd:
-        props.description.indexOf("=sch}") > -1
-          ? Moment(
-              props.description.substring(
-                props.description.indexOf("=sch}") - 20,
-                props.description.indexOf("=sch}")
-              )
-            )
-          : null,
-      description: props.description
-        ? props.description
-            .replace(/\{[^}]+\}/g, "")
-            .replace(/(^[ \t]*\n)/gm, "")
-        : "",
+      details: details,
       editing: props.isNew ? true : false,
       title: props.title,
       subtitle: props.subtitle,
-      link:
-        props.description.indexOf("{url=") > -1
-          ? props.description.substring(
-              props.description.indexOf("{url=") + 5,
-              props.description.indexOf("=url}")
-            )
-          : null,
-      priority:
-        props.description.indexOf("{pri=") > -1
-          ? props.description.substring(
-              props.description.indexOf("{pri=") + 5,
-              props.description.indexOf("=pri}")
-            )
-          : 0,
       saving: false,
       visible: true
     };
@@ -186,11 +139,6 @@ class Card extends Component<Props, State> {
     var form = document.forms["edit-" + this.props.id];
     var utcOffset = new Date().getTimezoneOffset() / 60;
 
-    var scheduled = "";
-    var estimated = "";
-    var link = "";
-    var priority = "";
-
     var scheduledDate = this.getField(form, "scheduledDate");
     var scheduledTimeStart = this.getField(form, "scheduledTimeStart");
     var scheduledTimeEnd = this.getField(form, "scheduledTimeEnd");
@@ -202,6 +150,9 @@ class Card extends Component<Props, State> {
     var label = this.getField(form, "label");
     var name = this.getField(form, "name");
     var desc = this.getField(form, "desc");
+
+    let detailScheduledStart = null;
+    let detailScheduledEnd = null;
 
     if (
       scheduledDate !== "" && //"2017-08-27"
@@ -217,16 +168,8 @@ class Card extends Component<Props, State> {
         "hours"
       );
 
-      scheduled =
-        "\n{sch=" +
-        Moment(start).format("YYYY-MM-DDTHH:mm:00[Z]") +
-        "|" +
-        Moment(end).format("YYYY-MM-DDTHH:mm:00[Z]") +
-        "=sch}";
-    }
-
-    if (estimatedField !== "" && estimatedField !== "TBD") {
-      estimated = "\n{est=" + estimatedField + "=est}";
+      detailScheduledStart = Moment(start).format("YYYY-MM-DDTHH:mm:00[Z]");
+      detailScheduledEnd = Moment(end).format("YYYY-MM-DDTHH:mm:00[Z]");
     }
 
     var due = null;
@@ -235,20 +178,23 @@ class Card extends Component<Props, State> {
       due = Moment(dueDate + " " + dueTime);
     }
 
-    if (linkField.indexOf("http") === 0) {
-      link = "\n{url=" + linkField + "=url}";
-    }
-
-    if (priorityField !== "0") {
-      priority = "\n{pri=" + priorityField + "=pri}";
-    }
+    const details = {
+      description: desc,
+      scheduledStart: detailScheduledStart,
+      scheduledEnd: detailScheduledEnd,
+      estimated: (estimatedField !== "" && estimatedField !== "TBD")
+        ? estimatedField
+        : null,
+      link: (linkField.indexOf("http") === 0) ? linkField : null,
+      priority: (priorityField !== "0") ? parseInt(priorityField) : null,
+    };
 
     var params = {
       key: Authentication.TrelloKey,
       token: Authentication.TrelloToken,
       idLabels: label,
       name: name,
-      desc: desc + scheduled + estimated + link + priority,
+      desc: JSON.stringify(details),
       due: due ? due.toDate() : null
     };
 
@@ -321,7 +267,19 @@ class Card extends Component<Props, State> {
   }
 
   render() {
-    const { isDragging, connectDragSource } = this.props;
+    const { isDragging, connectDragSource, due } = this.props;
+    const { details } = this.state;
+
+    const dueText = due ? Moment(due).format("ddd M/D h:mma") : "TBD";
+
+    const scheduledText = details.scheduledStart
+      ? Moment(details.scheduledStart).format("ddd M/D h:mma")
+      : "TBD";
+
+    const descriptionText = details.description || "";
+    const priority = details.priority || 0;
+    const estimatedText = details.estimated || "TBD";
+    const linkText = details.link || "";
 
     if (this.state.saving) {
       return (
@@ -357,7 +315,7 @@ class Card extends Component<Props, State> {
                     </option>
                   ))}
                 </select>
-                <select name="priority" defaultValue={this.state.priority}>
+                <select name="priority" defaultValue={priority}>
                   <option value="0" />
                   <option value="4">Blocker</option>
                   <option value="3">Critical</option>
@@ -372,34 +330,33 @@ class Card extends Component<Props, State> {
                   type="text"
                   style={{ width: "100%" }}
                   placeholder="URL"
-                  defaultValue={this.state.link}
+                  defaultValue={linkText}
                 />
                 <Textarea
                   name="desc"
                   placeholder="Description"
-                  defaultValue={this.state.description}
+                  defaultValue={descriptionText}
                 />
               </p>
 
               <Stat
                 icon="clock-o"
                 type="text"
-                value={this.state.estimated}
+                value={estimatedText}
                 editing
               />
               <Stat
                 icon="calendar"
                 type="event"
-                value={this.state.scheduled}
-                scheduledStart={this.state.scheduledStart}
-                scheduledEnd={this.state.scheduledEnd}
+                value={scheduledText}
+                scheduledStart={details.scheduledStart}
+                scheduledEnd={details.scheduledEnd}
                 editing
               />
-              {/*<Stat icon="refresh" value={this.state.cycle}*/}
               <Stat
                 icon="inbox"
                 type="date-time"
-                value={this.state.duePretty}
+                value={dueText} // TODO: can this be omitted during edit?
                 due={this.state.due}
                 editing
                 scheduledStart={null}
@@ -418,7 +375,7 @@ class Card extends Component<Props, State> {
                 value="X"
                 onClick={this.cancelEdit}
               />
-              {this.props.isNew || (
+              {!this.props.isNew && (
                 <input
                   className="btn btn-basic"
                   type="button"
@@ -436,21 +393,21 @@ class Card extends Component<Props, State> {
           {!isDragging && (
             <div className="card-block">
               <h4 className="card-title">
-                {this.state.link && (
+                {details && details.link && (
                   <a
-                    href={this.state.link}
+                    href={details.link}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
                     {this.state.title}
                   </a>
                 )}
-                {!this.state.link && <span>{this.state.title}</span>}
+                {(!details || !details.link) && <span>{this.state.title}</span>}
                 <span className="card-edit" onClick={this.edit}>
                   <Icon name="pencil" />
                 </span>
                 <span className="card-priority">
-                  <Priority level={this.state.priority} />
+                  <Priority level={priority} />
                 </span>
               </h4>
 
@@ -459,19 +416,19 @@ class Card extends Component<Props, State> {
               </h6>
 
               <div className="card-text">
-                <ReactMarkdown source={this.state.description} />
+                <ReactMarkdown source={descriptionText} />
               </div>
 
-              <Stat icon="clock-o" value={this.state.estimated} />
+              <Stat icon="clock-o" value={estimatedText} />
               <Stat
                 icon="calendar"
-                value={this.state.scheduled}
-                scheduled={this.state.scheduledDate}
+                value={scheduledText}
+                scheduled={details.scheduledStart}
               />
               <br />
               <Stat
                 icon="inbox"
-                value={this.state.duePretty}
+                value={dueText}
                 due={this.state.due}
               />
             </div>
