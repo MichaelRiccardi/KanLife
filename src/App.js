@@ -13,6 +13,7 @@ import HTML5Backend from "react-dnd-html5-backend";
 
 import Column from "./Column.js";
 import type ColumnType from "./Column.js";
+import type CardType from "./Card.js";
 
 type Props = {};
 
@@ -23,7 +24,7 @@ export type LabelType = {
 
 type State = {
   columns: Array<ColumnType>,
-  cards: Array<Object>,
+  cards: Array<CardType>,
   labels: Array<LabelType>,
 };
 
@@ -103,7 +104,9 @@ class App extends Component<Props, State> {
                 className={column.name}
                 key={column.id}
                 id={column.id}
-                cards={this.state.cards}
+                cards={this.state.cards.filter(
+                  card => card.idList === column.id
+                )}
                 poll={this.poll}
                 hideCard={this.hideCard}
                 labels={this.state.labels}

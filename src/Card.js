@@ -45,7 +45,7 @@ function collect(connect, monitor) {
 
 export type CardType = {
   name: string,
-  id: string,
+  id: ?string,
   labels: Array<LabelType>,
   desc: string,
   due: string,
@@ -59,9 +59,9 @@ type Props = {
   description: string,
   due: Date,
   key: string,
-  listId: string,
+  // listId: ?string,
   poll: Function,
-  priority: number,
+  //priority: number,
   isNew: boolean,
   cancelNewCard: Function,
   labels: Array<LabelType>,
@@ -242,8 +242,6 @@ class Card extends Component<Props, State> {
       priority = "\n{pri=" + priorityField + "=pri}";
     }
 
-    console.log(priorityField);
-
     var params = {
       key: Authentication.TrelloKey,
       token: Authentication.TrelloToken,
@@ -258,7 +256,7 @@ class Card extends Component<Props, State> {
 
     if (this.props.isNew) {
       type = "POST";
-      url = "https://api.trello.com/1/cards?idList=" + this.props.listId;
+      url = "https://api.trello.com/1/cards?idList=" + this.props.id;
     } else {
       type = "PUT";
       url = "https://api.trello.com/1/cards/" + this.props.id;
@@ -278,7 +276,7 @@ class Card extends Component<Props, State> {
         }
       },
       error: function(xhr) {
-        this.setState({ saving: false });
+        self.setState({ saving: false });
         alert("Error saving your changes: " + xhr.responseText);
         console.log(xhr);
       }
@@ -353,7 +351,9 @@ class Card extends Component<Props, State> {
                 <select name="label" defaultValue={this.props.subtitleId}>
                   <option value="" />
                   {this.props.labels.map(label => (
-                    <option value={label.id}>{label.name}</option>
+                    <option value={label.id} key={label.id}>
+                      {label.name}
+                    </option>
                   ))}
                 </select>
                 <select name="priority" defaultValue={this.state.priority}>
@@ -457,9 +457,9 @@ class Card extends Component<Props, State> {
                 {this.state.subtitle}
               </h6>
 
-              <p className="card-text">
+              <div className="card-text">
                 <ReactMarkdown source={this.state.description} />
-              </p>
+              </div>
 
               <Stat icon="clock-o" value={this.state.estimated} />
               <Stat

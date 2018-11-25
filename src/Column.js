@@ -76,7 +76,7 @@ type Props = {
 
 type State = {
   classNames: string,
-  newCard: Array<CardType>
+  addingNewCard: boolean,
 };
 
 class Column extends Component<Props, State> {
@@ -84,25 +84,12 @@ class Column extends Component<Props, State> {
     super();
     this.state = {
       classNames: "col " + props.title,
-      newCard: []
+      addingNewCard: false,
     };
   }
 
-  addNewCard = () => {
-    if (this.state.newCard.length === 0) {
-      const blankCard = {
-        title: "",
-        labels: [],
-        desc: "",
-        due: null,
-        poll: this.props.poll
-      };
-      this.setState({ newCard: [blankCard] });
-    }
-  };
-
-  cancelNewCard = () => {
-    this.setState({ newCard: [] });
+  toggleNewCard = () => {
+    this.setState(prevState => ({ addingNewCard: !prevState.addingNewCard }));
   };
 
   archiveDone = () => {
@@ -140,7 +127,7 @@ class Column extends Component<Props, State> {
             className="btn btn-primary new-button"
             type="button"
             value="+"
-            onClick={this.addNewCard}
+            onClick={this.toggleNewCard}
           />
           {this.props.title === "Done" ? (
             <input
@@ -154,25 +141,22 @@ class Column extends Component<Props, State> {
           )}
         </h2>
 
-        {this.state.newCard.map(card => (
+        {this.state.addingNewCard &&
           <Card
-            title={card.name}
-            subtitle={card.labels[0] ? card.labels[0].name : ""}
-            subtitleId={card.labels[0] ? card.labels[0].id : ""}
-            description={card.desc}
-            due={card.due}
-            key={card.id}
-            listId={this.props.id}
+            title={""}
+            subtitle={""}
+            subtitleId={""}
+            description={""}
+            due={""}
+            id={this.props.id} // Pass Column ID for new card
             poll={this.props.poll}
-            priority={this.props.priority}
-            isNew
-            cancelNewCard={this.cancelNewCard}
+            isNew={true}
+            cancelNewCard={this.toggleNewCard}
             labels={this.props.labels}
           />
-        ))}
+        }
 
         {this.props.cards
-          .filter(card => card.idList === this.props.id)
           .map(card => (
             <Card
               title={card.name}
