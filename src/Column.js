@@ -8,6 +8,8 @@ import Authentication from "./authentication.js";
 import jQuery from "jquery";
 import { DropTarget } from "react-dnd";
 
+import type CardType from "./Card.js";
+
 export type ColumnType = {
   name: string,
   id: string,
@@ -69,12 +71,12 @@ type Props = {
   priority: number,
   hideCard: Function,
   labels: Array<Object>,
-  cards: Array<Object>
+  cards: Array<CardType>,
 };
 
 type State = {
   classNames: string,
-  newCard: Array<Object>
+  newCard: Array<CardType>
 };
 
 class Column extends Component<Props, State> {

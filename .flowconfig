@@ -2,6 +2,7 @@
 .*/build/.*
 
 [include]
+.*/src/.*
 
 [libs]
 

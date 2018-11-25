@@ -13,6 +13,8 @@ import Priority from "./Priority.js";
 import Stat from "./Stat.js";
 import Types from "./Types.js";
 
+import type LabelType from "./App.js";
+
 const cardSource = {
   canDrag(props) {
     return true;
@@ -41,6 +43,14 @@ function collect(connect, monitor) {
   };
 }
 
+export type CardType = {
+  name: string,
+  id: string,
+  labels: Array<LabelType>,
+  desc: string,
+  due: string,
+};
+
 type Props = {
   id: string,
   title: string,
@@ -54,7 +64,7 @@ type Props = {
   priority: number,
   isNew: boolean,
   cancelNewCard: Function,
-  labels: Array<Object>,
+  labels: Array<LabelType>,
   isDragging: any,
   connectDragSource: any
 };

@@ -16,7 +16,7 @@ import type ColumnType from "./Column.js";
 
 type Props = {};
 
-type LabelType = {
+export type LabelType = {
   name: string,
   id: string,
 };
