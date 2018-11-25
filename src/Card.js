@@ -172,7 +172,8 @@ class Card extends Component<Props, State> {
 
   getField = (form: HTMLFormElement, field: string) => {
     return form[field] instanceof HTMLInputElement ||
-      form[field] instanceof HTMLSelectElement
+      form[field] instanceof HTMLSelectElement ||
+      form[field] instanceof HTMLTextAreaElement
       ? form[field].value
       : "";
   };
