@@ -284,7 +284,7 @@ class Card extends Component<Props, State> {
     if (this.state.saving) {
       return (
         <div className="card card-outline-info">
-          <div className="card-block centered">
+          <div className="card-body centered">
             <h4 className="card-title">
               <Icon name="circle-o-notch fa-pulse fa-fw" />
               &nbsp;Saving...
@@ -296,7 +296,7 @@ class Card extends Component<Props, State> {
       return (
         <form id={"edit-" + this.props.id} onSubmit={this.updateCard}>
           <div className="card card-outline-info">
-            <div className="card-block">
+            <div className="card-body">
               <h4 className="card-title">
                 <input
                   name="name"
@@ -363,7 +363,7 @@ class Card extends Component<Props, State> {
                 scheduledEnd={null}
                 scheduled={null}
               />
-
+              <br />
               <input
                 className="btn btn-success"
                 type="submit"
@@ -391,7 +391,7 @@ class Card extends Component<Props, State> {
       return connectDragSource(
         <div className="card card-outline-info">
           {!isDragging && (
-            <div className="card-block">
+            <div className="card-body">
               <h4 className="card-title">
                 {details && details.link && (
                   <a
