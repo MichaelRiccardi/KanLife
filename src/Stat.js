@@ -80,21 +80,18 @@ class Stat extends Component<Props, State> {
 
   render() {
     if (this.props.editing) {
-      var editField;
-
       switch (this.props.type) {
         case "text":
-          editField = (
-            <span>
+          return (
+            <div className="form-group">
+              <Icon name={this.props.icon} />
               <input
                 type="text"
                 name="estimated"
                 defaultValue={this.props.value}
               />
-              <br />
-            </span>
+            </div>
           );
-          break;
 
         case "date-time":
           var date = this.props.due
@@ -104,15 +101,13 @@ class Stat extends Component<Props, State> {
             ? Moment(this.props.due).format("HH:mm:") + "00"
             : "";
 
-          editField = (
-            <span>
+          return (
+            <div className="form-group">
+              <Icon name={this.props.icon} />
               <input type="date" name="dueDate" defaultValue={date} />
               <input type="time" name="dueTime" defaultValue={time} />
-              <br />
-              <br />
-            </span>
+            </div>
           );
-          break;
 
         case "event":
           var scheduledDate =
@@ -128,37 +123,32 @@ class Stat extends Component<Props, State> {
               ? this.props.scheduledEnd.format("HH:mm:00")
               : null;
 
-          editField = (
-            <span>
-              <input
-                type="date"
-                name="scheduledDate"
-                defaultValue={scheduledDate}
-              />
-              <br />
-              from{" "}
-              <input
-                type="time"
-                name="scheduledTimeStart"
-                defaultValue={start}
-              />
-              to{" "}
-              <input type="time" name="scheduledTimeEnd" defaultValue={end} />
-            </span>
+          return (
+            <>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <Icon name={this.props.icon} />
+                <input
+                  type="date"
+                  name="scheduledDate"
+                  defaultValue={scheduledDate}
+                />
+              </div>
+              <div className="form-group">
+                from{" "}
+                <input
+                  type="time"
+                  name="scheduledTimeStart"
+                  defaultValue={start}
+                />
+                to{" "}
+                <input type="time" name="scheduledTimeEnd" defaultValue={end} />
+              </div>
+            </>
           );
-          break;
 
         default:
-          editField = "???";
-          break;
+          return <div className="form-group">Invalid type!</div>;
       }
-
-      return (
-        <div className="form-group">
-          <Icon name={this.props.icon} />
-          {editField}
-        </div>
-      );
     } else {
       var styleObj =
         this.state.color === ""
