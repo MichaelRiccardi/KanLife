@@ -77,7 +77,7 @@ type Props = {
 };
 
 type State = {
-  due: string,
+  due: ?Moment,
   details: CardDetailType,
   editing: boolean,
   title: string,
@@ -105,7 +105,7 @@ class Card extends Component<Props, State> {
       };
     }
     this.state = {
-      due: props.due,
+      due: props.due != null ? Moment(props.due) : null,
       details: details,
       editing: props.isNew ? true : false,
       title: props.title,
