@@ -3,6 +3,11 @@ html {
   background-color: #f5f5f5;
 }
 
+body {
+  font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif !important;
+}
+
 h4 input,
 textarea {
   width: 100%;
@@ -23,16 +28,20 @@ input::-webkit-inner-spin-button {
 
 input[type="date"],
 input[type="time"] {
-  border: 2px black !important;
+  border: 1px solid gray !important;
   font-size: 1em;
 }
 
-input[type="date"] {
-  width: 40%;
+input, select {
+  flex-grow: 1;
 }
 
 input[type="time"] {
-  width: 30%;
+  text-align: center;
+}
+
+.card-subtitle {
+  display: flex;
 }
 
 .btn {
@@ -44,6 +53,16 @@ input[type="time"] {
 
 .new-button {
   float: none !important;
+}
+
+.form-group {
+  display: flex;
+}
+
+.form-group i {
+  vertical-align: middle;
+  margin-top: auto;
+  margin-bottom: auto;
 }
 
 .root .card {
@@ -133,7 +152,7 @@ input[type="time"] {
   color: white;
 }
 
-.blue {
+.scheduled-today {
   background: #66d9ff;
 }
 

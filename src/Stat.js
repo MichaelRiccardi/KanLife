@@ -7,94 +7,88 @@ import Icon from "./Icon.js";
 
 type Props = {
   value: string,
-  due?: ?string,
+  due?: ?Moment,
   type?: string,
   scheduled?: ?Date,
   editing?: ?boolean,
   icon: string,
   value: string,
-  scheduledStart?: ?any, // Moment
-  scheduledEnd?: ?any // Moment
+  scheduledStart?: ?Moment,
+  scheduledEnd?: ?Moment,
 };
 
-type State = {
-  classNames: string,
-  color: string
+type StyleAttributes = {
+  classNames?: string,
+  customStyle?: Object,
 };
 
-class Stat extends Component<Props, State> {
-  constructor() {
-    super();
-    this.state = {
-      classNames: "card-link",
-      color: ""
-    };
-  }
-
+class Stat extends Component<Props> {
   pickFromGradient = (
     startColor: Array<number>,
     endColor: Array<number>,
     fraction: number
-  ) => {
+  ): string => {
     var result = [];
     for (var i = 0; i < 3; i++) {
       result[i] = Math.round(
         startColor[i] + (endColor[i] - startColor[i]) * fraction
       );
     }
-    this.setState({ color: "rgb(" + result.join(",") + ")" });
+    return "rgb(" + result.join(",") + ")";
   };
 
-  componentDidMount() {
+  getStyle = (): StyleAttributes => {
+    const { due } = this.props;
+    const now = Moment(new Date());
+
+    let classNames = ["card-link", "highlight"];
+    let customStyle = {};
+
     if (this.props.value === "TBD") {
-      this.setState({ classNames: "card-link highlight tbd" });
-    } else if (this.props.due != null) {
-      if (Moment(new Date()).isAfter(this.props.due)) {
-        this.setState({ classNames: "card-link highlight past-due" });
-      } else if (
-        Moment(new Date())
-          .add(24, "hours")
-          .isAfter(this.props.due)
-      ) {
-        this.setState({ classNames: "card-link highlight due-24-hours" });
-      } else if (
-        Moment(new Date())
-          .add(7, "days")
-          .isAfter(this.props.due)
-      ) {
-        var fraction =
-          (Moment(this.props.due).diff(Moment(new Date()), "hours") - 24) /
-          (6 * 24);
-        this.pickFromGradient([0xff, 0xff, 0x00], [0x00, 0xff, 0x00], fraction);
-        this.setState({ classNames: "card-link highlight due-this-week" });
+      classNames.push("tbd");
+    } else if (due != null) {
+      if (now.isAfter(due)) {
+        classNames.push("past-due");
+      } else if (due.isBefore(now.add(24, "hours"))) {
+        classNames.push("due-24-hours");
+      } else if (due.isBefore(now.add(1, "week"))) {
+        customStyle = {
+          backgroundColor: this.pickFromGradient(
+            [0xff, 0xff, 0x00],
+            [0x00, 0xff, 0x00],
+            (due.diff(now, "hours") - 24) / (6 * 24)
+          ),
+        };
+        classNames.push("due-this-week");
+      }
+    } else if (this.props.scheduled != null) {
+      if (now.isAfter(this.props.scheduled)) {
+        classNames.push("past-scheduled");
+      } else if (now.isSame(this.props.scheduled, "d")) {
+        classNames.push("scheduled-today");
       }
     }
-    if (this.props.scheduled != null) {
-      if (Moment(new Date()).isAfter(this.props.scheduled)) {
-        this.setState({ classNames: "card-link highlight past-scheduled" });
-      } else if (Moment(new Date()).isSame(this.props.scheduled, "d")) {
-        this.setState({ classNames: "card-link highlight blue" });
-      }
-    }
-  }
+
+    return {
+      classNames: classNames.join(" "),
+      customStyle: customStyle,
+    };
+  };
 
   render() {
     if (this.props.editing) {
-      var editField;
-
       switch (this.props.type) {
         case "text":
-          editField = (
-            <span>
+          return (
+            <div className="form-group">
+              <Icon name={this.props.icon} />
               <input
                 type="text"
                 name="estimated"
                 defaultValue={this.props.value}
               />
-              <br />
-            </span>
+            </div>
           );
-          break;
 
         case "date-time":
           var date = this.props.due
@@ -104,15 +98,13 @@ class Stat extends Component<Props, State> {
             ? Moment(this.props.due).format("HH:mm:") + "00"
             : "";
 
-          editField = (
-            <span>
+          return (
+            <div className="form-group">
+              <Icon name={this.props.icon} />
               <input type="date" name="dueDate" defaultValue={date} />
               <input type="time" name="dueTime" defaultValue={time} />
-              <br />
-              <br />
-            </span>
+            </div>
           );
-          break;
 
         case "event":
           var scheduledDate =
@@ -128,46 +120,39 @@ class Stat extends Component<Props, State> {
               ? this.props.scheduledEnd.format("HH:mm:00")
               : null;
 
-          editField = (
-            <span>
-              <input
-                type="date"
-                name="scheduledDate"
-                defaultValue={scheduledDate}
-              />
-              <br />
-              from{" "}
-              <input
-                type="time"
-                name="scheduledTimeStart"
-                defaultValue={start}
-              />
-              to{" "}
-              <input type="time" name="scheduledTimeEnd" defaultValue={end} />
-            </span>
+          return (
+            <>
+              <div className="form-group" style={{ marginBottom: 0 }}>
+                <Icon name={this.props.icon} />
+                <input
+                  type="date"
+                  name="scheduledDate"
+                  defaultValue={scheduledDate}
+                />
+              </div>
+              <div className="form-group">
+                from{" "}
+                <input
+                  type="time"
+                  name="scheduledTimeStart"
+                  defaultValue={start}
+                />
+                to{" "}
+                <input type="time" name="scheduledTimeEnd" defaultValue={end} />
+              </div>
+            </>
           );
-          break;
 
         default:
-          editField = "???";
-          break;
+          return <div className="form-group">Invalid type!</div>;
       }
-
-      return (
-        <div className="form-group">
-          <Icon name={this.props.icon} />
-          {editField}
-        </div>
-      );
     } else {
-      var styleObj =
-        this.state.color === ""
-          ? {}
-          : {
-              backgroundColor: this.state.color
-            };
+      const styleAttributes = this.getStyle();
       return (
-        <span className={this.state.classNames} style={styleObj}>
+        <span
+          className={styleAttributes.classNames || ""}
+          style={styleAttributes.customStyle || {}}
+        >
           <Icon name={this.props.icon} />
           {this.props.value}
         </span>
