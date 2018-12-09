@@ -8,9 +8,11 @@ import jQuery from "jquery";
 import { DragSource } from "react-dnd";
 import ReactMarkdown from "react-markdown";
 
+import DateTimeAttribute from "./DateTimeAttribute.js";
+import EventAttribute from "./EventAttribute.js";
 import Icon from "./Icon.js";
 import Priority from "./Priority.js";
-import Stat from "./Stat.js";
+import TextAttribute from "./TextAttribute.js";
 import Types from "./Types.js";
 
 import type LabelType from "./App.js";
@@ -266,15 +268,25 @@ class Card extends Component<Props, State> {
     alert("card " + this.props.id + " move to " + id);
   }
 
+  pickFromGradient = (
+    startColor: Array<number>,
+    endColor: Array<number>,
+    fraction: number
+  ): string => {
+    var result = [];
+    for (var i = 0; i < 3; i++) {
+      result[i] = Math.round(
+        startColor[i] + (endColor[i] - startColor[i]) * fraction
+      );
+    }
+    return "rgb(" + result.join(",") + ")";
+  };
+
   render() {
-    const { isDragging, connectDragSource, due } = this.props;
+    const { isDragging, connectDragSource } = this.props;
     const { details } = this.state;
 
-    const dueText = due ? Moment(due).format("ddd M/D h:mma") : "TBD";
-
-    const scheduledText = details.scheduledStart
-      ? Moment(details.scheduledStart).format("ddd M/D h:mma")
-      : "TBD";
+    const due = this.props.due ? Moment(this.props.due) : null;
 
     const descriptionText = details.description || "";
     const priority = details.priority || 0;
@@ -339,30 +351,33 @@ class Card extends Component<Props, State> {
                 />
               </p>
 
-              <Stat
+              <TextAttribute
+                name="estimated"
                 icon="clock-o"
-                type="text"
                 value={estimatedText}
-                editing
+                editing={true}
+                styleAttributes={{
+                  classNames: estimatedText === "TBD" ? "tbd" : "",
+                }}
               />
-              <Stat
+
+              <EventAttribute
+                name="scheduled"
                 icon="calendar"
-                type="event"
-                value={scheduledText}
-                scheduledStart={details.scheduledStart}
-                scheduledEnd={details.scheduledEnd}
-                editing
+                start={details.scheduledStart}
+                end={details.scheduledEnd}
+                editing={true}
+                styleAttributes={{}}
               />
-              <Stat
+
+              <DateTimeAttribute
+                name="due"
                 icon="inbox"
-                type="date-time"
-                value={dueText} // TODO: can this be omitted during edit?
-                due={this.state.due}
-                editing
-                scheduledStart={null}
-                scheduledEnd={null}
-                scheduled={null}
+                dateTime={due}
+                editing={true}
+                styleAttributes={{}}
               />
+
               <br />
               <input
                 className="btn btn-success"
@@ -410,26 +425,63 @@ class Card extends Component<Props, State> {
                   <Priority level={priority} />
                 </span>
               </h4>
-
               <h6 className="card-subtitle mb-2 text-muted">
                 {this.state.subtitle}
               </h6>
-
               <div className="card-text">
                 <ReactMarkdown source={descriptionText} />
               </div>
-
-              <Stat icon="clock-o" value={estimatedText} />
-              <Stat
+              <TextAttribute
+                name="estimated"
+                icon="clock-o"
+                value={estimatedText}
+                editing={false}
+                styleAttributes={{
+                  classNames: estimatedText === "TBD" ? "tbd" : "",
+                }}
+              />
+              <EventAttribute
+                name="scheduled"
                 icon="calendar"
-                value={scheduledText}
-                scheduled={details.scheduledStart}
+                start={details.scheduledStart}
+                end={details.scheduledEnd}
+                editing={false}
+                styleAttributes={{
+                  classNames: !details.scheduledStart
+                    ? "tbd"
+                    : Moment().isAfter(details.scheduledStart)
+                    ? "past-scheduled"
+                    : Moment().isSame(details.scheduledStart, "d")
+                    ? "scheduled-today"
+                    : "",
+                }}
               />
               <br />
-              <Stat
+              <DateTimeAttribute
+                name="due"
                 icon="inbox"
-                value={dueText}
-                due={this.state.due}
+                dateTime={due}
+                editing={false}
+                styleAttributes={
+                  !due
+                    ? { classNames: "tbd" }
+                    : Moment().isAfter(due)
+                    ? { classNames: "past-due" }
+                    : due.isBefore(Moment().add(24, "hours"))
+                    ? { classNames: "due-24-hours" }
+                    : due.isBefore(Moment().add(1, "week"))
+                    ? {
+                        classNames: "due-this-week",
+                        customStyle: {
+                          backgroundColor: this.pickFromGradient(
+                            [0xff, 0xff, 0x00],
+                            [0x00, 0xff, 0x00],
+                            (due.diff(Moment(), "hours") - 24) / (6 * 24)
+                          ),
+                        },
+                      }
+                    : {}
+                }
               />
             </div>
           )}
