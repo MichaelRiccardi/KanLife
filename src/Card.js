@@ -35,13 +35,13 @@ const cardSource = {
     if (monitor.didDrop()) {
       return;
     }
-  }
+  },
 };
 
 function collect(connect, monitor) {
   return {
     connectDragSource: connect.dragSource(),
-    isDragging: monitor.isDragging()
+    isDragging: monitor.isDragging(),
   };
 }
 
@@ -60,7 +60,7 @@ type CardDetailType = {
   estimated: ?string,
   link: ?string,
   priority: ?number,
-}
+};
 
 type Props = {
   id: string,
@@ -75,7 +75,7 @@ type Props = {
   cancelNewCard: Function,
   labels: Array<LabelType>,
   isDragging: any,
-  connectDragSource: any
+  connectDragSource: any,
 };
 
 type State = {
@@ -85,7 +85,7 @@ type State = {
   title: string,
   subtitle: string,
   saving: boolean,
-  visible: boolean
+  visible: boolean,
 };
 
 class Card extends Component<Props, State> {
@@ -94,8 +94,12 @@ class Card extends Component<Props, State> {
     let details = null;
     try {
       details = JSON.parse(props.description);
-      details.scheduledStart = details.scheduledStart ? Moment(details.scheduledStart) : null;
-      details.scheduledEnd = details.scheduledEnd ? Moment(details.scheduledEnd) : null;
+      details.scheduledStart = details.scheduledStart
+        ? Moment(details.scheduledStart)
+        : null;
+      details.scheduledEnd = details.scheduledEnd
+        ? Moment(details.scheduledEnd)
+        : null;
     } catch {
       details = {
         description: null,
@@ -113,7 +117,7 @@ class Card extends Component<Props, State> {
       title: props.title,
       subtitle: props.subtitle,
       saving: false,
-      visible: true
+      visible: true,
     };
     this.edit = this.edit.bind(this);
     this.cancelEdit = this.cancelEdit.bind(this);
@@ -184,11 +188,12 @@ class Card extends Component<Props, State> {
       description: desc,
       scheduledStart: detailScheduledStart,
       scheduledEnd: detailScheduledEnd,
-      estimated: (estimatedField !== "" && estimatedField !== "TBD")
-        ? estimatedField
-        : null,
-      link: (linkField.indexOf("http") === 0) ? linkField : null,
-      priority: (priorityField !== "0") ? parseInt(priorityField) : null,
+      estimated:
+        estimatedField !== "" && estimatedField !== "TBD"
+          ? estimatedField
+          : null,
+      link: linkField.indexOf("http") === 0 ? linkField : null,
+      priority: priorityField !== "0" ? parseInt(priorityField) : null,
     };
 
     var params = {
@@ -197,7 +202,7 @@ class Card extends Component<Props, State> {
       idLabels: label,
       name: name,
       desc: JSON.stringify(details),
-      due: due ? due.toDate() : null
+      due: due ? due.toDate() : null,
     };
 
     var url;
@@ -228,7 +233,7 @@ class Card extends Component<Props, State> {
         self.setState({ saving: false });
         alert("Error saving your changes: " + xhr.responseText);
         console.log(xhr);
-      }
+      },
     });
   };
 
@@ -245,7 +250,7 @@ class Card extends Component<Props, State> {
     if (window.confirm("Are you sure you want to delete this card?")) {
       var params = {
         key: Authentication.TrelloKey,
-        token: Authentication.TrelloToken
+        token: Authentication.TrelloToken,
       };
       self.setState({ saving: true });
       jQuery.ajax({
@@ -259,7 +264,7 @@ class Card extends Component<Props, State> {
           self.setState({ saving: false });
           alert("Error deleting card: " + xhr.responseText);
           console.log(xhr);
-        }
+        },
       });
     }
   };
