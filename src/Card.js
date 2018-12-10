@@ -5,7 +5,6 @@ import Authentication from "./authentication.js";
 import Moment from "moment";
 import Textarea from "react-textarea-autosize";
 import jQuery from "jquery";
-import { DragSource } from "react-dnd";
 import ReactMarkdown from "react-markdown";
 
 import DateTimeAttribute from "./DateTimeAttribute.js";
@@ -13,41 +12,13 @@ import EventAttribute from "./EventAttribute.js";
 import Icon from "./Icon.js";
 import Priority from "./Priority.js";
 import TextAttribute from "./TextAttribute.js";
-import Types from "./Types.js";
 
-import type LabelType from "./App.js";
-
-const cardSource = {
-  canDrag(props) {
-    return true;
-  },
-
-  isDragging(props, monitor) {
-    return monitor.getItem().id === props.id;
-  },
-
-  beginDrag(props, monitor, component) {
-    const item = { id: props.id };
-    return item;
-  },
-
-  endDrag(props, monitor, component) {
-    if (monitor.didDrop()) {
-      return;
-    }
-  },
-};
-
-function collect(connect, monitor) {
-  return {
-    connectDragSource: connect.dragSource(),
-    isDragging: monitor.isDragging(),
-  };
-}
+import type { LabelType } from "./App.js";
 
 export type CardType = {
   name: string,
   id: ?string,
+  idList: string, // columnId
   labels: Array<LabelType>,
   desc: string,
   due: string,
@@ -68,14 +39,11 @@ type Props = {
   subtitle: string,
   subtitleId: string,
   description: string,
-  due: Date,
-  key: string,
+  due: ?string,
   poll: Function,
-  isNew: boolean,
-  cancelNewCard: Function,
+  isNew?: boolean,
+  cancelNewCard?: Function,
   labels: Array<LabelType>,
-  isDragging: any,
-  connectDragSource: any,
 };
 
 type State = {
@@ -85,11 +53,11 @@ type State = {
   title: string,
   subtitle: string,
   saving: boolean,
-  visible: boolean,
+  dragging: boolean,
 };
 
 class Card extends Component<Props, State> {
-  constructor(props) {
+  constructor(props: Props) {
     super();
     let details = null;
     try {
@@ -117,7 +85,7 @@ class Card extends Component<Props, State> {
       title: props.title,
       subtitle: props.subtitle,
       saving: false,
-      visible: true,
+      dragging: false,
     };
     this.edit = this.edit.bind(this);
     this.cancelEdit = this.cancelEdit.bind(this);
@@ -226,7 +194,7 @@ class Card extends Component<Props, State> {
         self.props.poll();
         self.setState({ editing: false });
         if (self.props.isNew) {
-          self.props.cancelNewCard();
+          self.props.cancelNewCard && self.props.cancelNewCard();
         }
       },
       error: function(xhr) {
@@ -239,7 +207,7 @@ class Card extends Component<Props, State> {
 
   cancelEdit = () => {
     if (this.props.isNew) {
-      this.props.cancelNewCard();
+      this.props.cancelNewCard && this.props.cancelNewCard();
     } else {
       this.setState({ editing: false });
     }
@@ -269,10 +237,6 @@ class Card extends Component<Props, State> {
     }
   };
 
-  moveTo(id) {
-    alert("card " + this.props.id + " move to " + id);
-  }
-
   pickFromGradient = (
     startColor: Array<number>,
     endColor: Array<number>,
@@ -287,9 +251,18 @@ class Card extends Component<Props, State> {
     return "rgb(" + result.join(",") + ")";
   };
 
+  startDrag = (event: DragEvent): void => {
+    event.dataTransfer && event.dataTransfer.setData("text", this.props.id);
+    // Timeout hack allows original to be hidden without hiding the drag preview
+    setTimeout(() => this.setState({ dragging: true }));
+  };
+
+  endDrag = (): void => {
+    this.setState({ dragging: false });
+  };
+
   render() {
-    const { isDragging, connectDragSource } = this.props;
-    const { details } = this.state;
+    const { details, dragging } = this.state;
 
     const due = this.props.due ? Moment(this.props.due) : null;
 
@@ -407,10 +380,17 @@ class Card extends Component<Props, State> {
           </div>
         </form>
       );
-    } else if (this.state.visible) {
-      return connectDragSource(
-        <div className="card card-outline-info">
-          {!isDragging && (
+    } else {
+      return (
+        <div
+          className="card card-outline-info"
+          draggable="true"
+          onDragStart={event => {
+            this.startDrag(event);
+          }}
+          onDragEnd={this.endDrag}
+        >
+          {!dragging && (
             <div className="card-body">
               <h4 className="card-title">
                 {details && details.link && (
@@ -492,10 +472,8 @@ class Card extends Component<Props, State> {
           )}
         </div>
       );
-    } else {
-      return <div />;
     }
   }
 }
 
-export default DragSource(Types.CARD, cardSource, collect)(Card);
+export default Card;

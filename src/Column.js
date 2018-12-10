@@ -2,76 +2,25 @@
 
 import React, { Component } from "react";
 import Card from "./Card.js";
-import Types from "./Types.js";
 
 import Authentication from "./authentication.js";
 import jQuery from "jquery";
-import { DropTarget } from "react-dnd";
 
-import type CardType from "./Card.js";
+import type { CardType } from "./Card.js";
 
 export type ColumnType = {
   name: string,
   id: string,
 };
 
-function move(cardId, columnId, pollFunction, hideFunction) {
-  var params = {
-    key: Authentication.TrelloKey,
-    token: Authentication.TrelloToken,
-    idList: columnId
-  };
-  hideFunction(cardId);
-  jQuery.ajax({
-    type: "PUT",
-    url: "https://api.trello.com/1/cards/" + cardId,
-    data: params,
-    success: function() {
-      pollFunction();
-    },
-    error: function(xhr) {
-      pollFunction();
-      alert("Error moving card: " + xhr.responseText);
-    }
-  });
-}
-
-const columnTarget = {
-  canDrop(props, monitor) {
-    return true;
-  },
-  hover(props, monitor, component) {
-    //unneeded?
-  },
-  drop(props, monitor, component) {
-    const card = monitor.getItem();
-    move(card.id, props.id, props.poll, props.hideCard);
-  }
-};
-
-function collect(connect, monitor) {
-  return {
-    // Call this function inside render()
-    // to let React DnD handle the drag events:
-    connectDropTarget: connect.dropTarget(),
-    // You can ask the monitor about the current drag state:
-    isOver: monitor.isOver(),
-    isOverCurrent: monitor.isOver({ shallow: true }),
-    canDrop: monitor.canDrop(),
-    itemType: monitor.getItemType()
-  };
-}
-
 type Props = {
-  connectDropTarget: any,
-  isOver: any,
   title: string,
   poll: Function,
   id: string,
-  priority: number,
   hideCard: Function,
   labels: Array<Object>,
   cards: Array<CardType>,
+  dropCard: Function,
 };
 
 type State = {
@@ -80,7 +29,7 @@ type State = {
 };
 
 class Column extends Component<Props, State> {
-  constructor(props) {
+  constructor(props: Props) {
     super();
     this.state = {
       classNames: "col " + props.title,
@@ -118,9 +67,16 @@ class Column extends Component<Props, State> {
   };
 
   render() {
-    const { connectDropTarget } = this.props;
-    return connectDropTarget(
-      <div className={this.state.classNames}>
+    return (
+      <div
+        className={this.state.classNames}
+        onDragOver={event => {
+          event.preventDefault();
+        }}
+        onDrop={event => {
+          this.props.dropCard(event, this.props.id);
+        }}
+      >
         <h2>
           {this.props.title}
           <input
@@ -147,7 +103,7 @@ class Column extends Component<Props, State> {
             subtitle={""}
             subtitleId={""}
             description={""}
-            due={""}
+            due={null}
             id={this.props.id} // Pass Column ID for new card
             poll={this.props.poll}
             isNew={true}
@@ -165,9 +121,8 @@ class Column extends Component<Props, State> {
               description={card.desc}
               due={card.due}
               key={card.id}
-              id={card.id}
+              id={card.id || ""}
               poll={this.props.poll}
-              priority={this.props.priority}
               hideCard={this.props.hideCard}
               labels={this.props.labels}
             />
@@ -177,4 +132,4 @@ class Column extends Component<Props, State> {
   }
 }
 
-export default DropTarget(Types.CARD, columnTarget, collect)(Column);
+export default Column;

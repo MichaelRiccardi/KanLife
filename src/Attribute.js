@@ -23,7 +23,7 @@ class Attribute extends Component<Props> {
       <span
         className={
           "card-link highlight " +
-          (styleAttributes ? styleAttributes.classNames : "")
+          (styleAttributes ? styleAttributes.classNames || "" : "")
         }
         style={styleAttributes ? styleAttributes.customStyle : {}}
       >

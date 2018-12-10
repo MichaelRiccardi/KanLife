@@ -8,12 +8,10 @@ import "../node_modules/font-awesome/css/font-awesome.min.css";
 
 import Authentication from "./authentication.js";
 import jQuery from "jquery";
-import { DragDropContext } from "react-dnd";
-import HTML5Backend from "react-dnd-html5-backend";
 
 import Column from "./Column.js";
-import type ColumnType from "./Column.js";
-import type CardType from "./Card.js";
+import type { ColumnType } from "./Column.js";
+import type { CardType } from "./Card.js";
 
 type Props = {};
 
@@ -29,7 +27,7 @@ type State = {
 };
 
 class App extends Component<Props, State> {
-  constructor(props) {
+  constructor() {
     super();
     this.state = {
       columns: [],
@@ -93,6 +91,38 @@ class App extends Component<Props, State> {
     }
   };
 
+  dropCard = (event: DragEvent, columnId: string): void => {
+    event.preventDefault();
+    const cardId = event.dataTransfer ? event.dataTransfer.getData("text") : "";
+    const cardIndex = this.state.cards.map(card => card.id).indexOf(cardId);
+
+    if (cardIndex === -1) {
+      alert("Error: Tried to drop a non-existent card.");
+    } else {
+      let cards = [...this.state.cards];
+
+      if (cards[cardIndex].idList !== columnId) {
+        cards[cardIndex].idList = columnId;
+        this.setState({ cards });
+
+        jQuery.ajax({
+          type: "PUT",
+          url: "https://api.trello.com/1/cards/" + cardId,
+          data: {
+            key: Authentication.TrelloKey,
+            token: Authentication.TrelloToken,
+            idList: columnId,
+          },
+          success: () => {}, // Success is assumed
+          error: xhr => {
+            this.poll(); // Reload cards on error
+            alert("Error moving card: " + xhr.responseText);
+          },
+        });
+      }
+    }
+  };
+
   render() {
     return (
       <div className="root">
@@ -108,6 +138,7 @@ class App extends Component<Props, State> {
                   card => card.idList === column.id
                 )}
                 poll={this.poll}
+                dropCard={this.dropCard}
                 hideCard={this.hideCard}
                 labels={this.state.labels}
               />
@@ -119,4 +150,4 @@ class App extends Component<Props, State> {
   }
 }
 
-export default DragDropContext(HTML5Backend)(App);
+export default App;
