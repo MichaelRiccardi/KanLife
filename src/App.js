@@ -78,16 +78,31 @@ class App extends Component<Props, State> {
       });
   };
 
-  hideCard = (id: string) => {
-    var cardIndex = this.state.cards
-      .map(function(card) {
-        return card.id;
-      })
-      .indexOf(id);
-    if (cardIndex > -1) {
-      this.state.cards.splice(cardIndex, 1);
-    } else {
-      alert("Error: Tried to hide a non-existant card.");
+  deleteCard = (id: string) => {
+    if (window.confirm("Are you sure you want to delete this card?")) {
+      const cardIndex = this.state.cards.map(card => card.id).indexOf(id);
+
+      if (cardIndex === -1) {
+        alert("Error: Tried to delete a non-existent card.");
+      } else {
+        let cards = [...this.state.cards];
+        cards.splice(cardIndex, 1);
+        this.setState({ cards });
+
+        jQuery.ajax({
+          type: "DELETE",
+          url: "https://api.trello.com/1/cards/" + id,
+          data: {
+            key: Authentication.TrelloKey,
+            token: Authentication.TrelloToken,
+          },
+          success: () => {}, // Success is assumed
+          error: xhr => {
+            this.poll(); // Reload cards on error
+            alert("Error deleting card: " + xhr.responseText);
+          },
+        });
+      }
     }
   };
 
@@ -139,7 +154,7 @@ class App extends Component<Props, State> {
                 )}
                 poll={this.poll}
                 dropCard={this.dropCard}
-                hideCard={this.hideCard}
+                deleteCard={this.deleteCard}
                 labels={this.state.labels}
               />
             ))}

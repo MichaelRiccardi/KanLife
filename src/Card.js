@@ -42,6 +42,7 @@ type Props = {
   due: ?string,
   poll: Function,
   isNew?: boolean,
+  deleteCard?: Function,
   cancelNewCard?: Function,
   labels: Array<LabelType>,
 };
@@ -87,10 +88,6 @@ class Card extends Component<Props, State> {
       saving: false,
       dragging: false,
     };
-    this.edit = this.edit.bind(this);
-    this.cancelEdit = this.cancelEdit.bind(this);
-    this.updateCard = this.updateCard.bind(this);
-    this.delete = this.delete.bind(this);
   }
 
   edit = () => {
@@ -210,30 +207,6 @@ class Card extends Component<Props, State> {
       this.props.cancelNewCard && this.props.cancelNewCard();
     } else {
       this.setState({ editing: false });
-    }
-  };
-
-  delete = () => {
-    var self = this;
-    if (window.confirm("Are you sure you want to delete this card?")) {
-      var params = {
-        key: Authentication.TrelloKey,
-        token: Authentication.TrelloToken,
-      };
-      self.setState({ saving: true });
-      jQuery.ajax({
-        type: "DELETE",
-        url: "https://api.trello.com/1/cards/" + this.props.id,
-        data: params,
-        success: function() {
-          self.props.poll();
-        },
-        error: function(xhr) {
-          self.setState({ saving: false });
-          alert("Error deleting card: " + xhr.responseText);
-          console.log(xhr);
-        },
-      });
     }
   };
 
@@ -373,7 +346,10 @@ class Card extends Component<Props, State> {
                   className="btn btn-basic"
                   type="button"
                   value="&#128465;"
-                  onClick={this.delete}
+                  onClick={() =>
+                    this.props.deleteCard &&
+                    this.props.deleteCard(this.props.id)
+                  }
                 />
               )}
             </div>

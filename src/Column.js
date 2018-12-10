@@ -17,10 +17,10 @@ type Props = {
   title: string,
   poll: Function,
   id: string,
-  hideCard: Function,
   labels: Array<Object>,
   cards: Array<CardType>,
   dropCard: Function,
+  deleteCard: Function,
 };
 
 type State = {
@@ -122,7 +122,7 @@ class Column extends Component<Props, State> {
             key={card.id}
             id={card.id || ""}
             poll={this.props.poll}
-            hideCard={this.props.hideCard}
+            deleteCard={this.props.deleteCard}
             labels={this.props.labels}
           />
         ))}
