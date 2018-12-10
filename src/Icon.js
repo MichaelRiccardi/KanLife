@@ -3,7 +3,7 @@
 import React, { Component } from "react";
 
 type Props = {
-  name: string
+  name: string,
 };
 
 class Icon extends Component<Props> {

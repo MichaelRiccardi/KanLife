@@ -32,7 +32,8 @@ input[type="time"] {
   font-size: 1em;
 }
 
-input, select {
+input,
+select {
   flex-grow: 1;
 }
 

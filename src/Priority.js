@@ -4,7 +4,7 @@ import React, { Component } from "react";
 import Icon from "./Icon.js";
 
 type Props = {
-  level: number
+  level: number,
 };
 
 class Priority extends Component<Props> {

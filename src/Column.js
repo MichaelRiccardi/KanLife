@@ -49,7 +49,7 @@ class Column extends Component<Props, State> {
         "https://api.trello.com/1/lists/" + this.props.id + "/archiveAllCards";
       var params = {
         key: Authentication.TrelloKey,
-        token: Authentication.TrelloToken
+        token: Authentication.TrelloToken,
       };
 
       jQuery.ajax({
@@ -61,7 +61,7 @@ class Column extends Component<Props, State> {
         },
         error: function(xhr) {
           alert("Error archiving cards: " + xhr.responseText);
-        }
+        },
       });
     }
   };
@@ -97,7 +97,7 @@ class Column extends Component<Props, State> {
           )}
         </h2>
 
-        {this.state.addingNewCard &&
+        {this.state.addingNewCard && (
           <Card
             title={""}
             subtitle={""}
@@ -110,23 +110,22 @@ class Column extends Component<Props, State> {
             cancelNewCard={this.toggleNewCard}
             labels={this.props.labels}
           />
-        }
+        )}
 
-        {this.props.cards
-          .map(card => (
-            <Card
-              title={card.name}
-              subtitle={card.labels[0] ? card.labels[0].name : ""}
-              subtitleId={card.labels[0] ? card.labels[0].id : ""}
-              description={card.desc}
-              due={card.due}
-              key={card.id}
-              id={card.id || ""}
-              poll={this.props.poll}
-              hideCard={this.props.hideCard}
-              labels={this.props.labels}
-            />
-          ))}
+        {this.props.cards.map(card => (
+          <Card
+            title={card.name}
+            subtitle={card.labels[0] ? card.labels[0].name : ""}
+            subtitleId={card.labels[0] ? card.labels[0].id : ""}
+            description={card.desc}
+            due={card.due}
+            key={card.id}
+            id={card.id || ""}
+            poll={this.props.poll}
+            hideCard={this.props.hideCard}
+            labels={this.props.labels}
+          />
+        ))}
       </div>
     );
   }
