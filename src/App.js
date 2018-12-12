@@ -59,22 +59,22 @@ class App extends Component<Props, State> {
       });
   }
 
-  poll = () => {
-    jQuery
+  poll = async () => {
+    await jQuery
       .get(
         "https://api.trello.com/1/boards/kNrLkVPc/cards?fields=name,desc,due,labels,idList&key=" +
           Authentication.TrelloKey +
           "&token=" +
           Authentication.TrelloToken
       )
-      .then(result => {
-        result.sort(function(a, b) {
-          var aDue = a.due ? new Date(a.due).getTime() : 0;
-          var bDue = b.due ? new Date(b.due).getTime() : 0;
-          return aDue - bDue;
+      .then(cards => {
+        cards.sort((a: CardType, b: CardType) => {
+          return (
+            (a.due ? new Date(a.due).getTime() : 0) -
+            (b.due ? new Date(b.due).getTime() : 0)
+          );
         });
-        this.setState({ cards: [] });
-        this.setState({ cards: result });
+        this.setState({ cards });
       });
   };
 

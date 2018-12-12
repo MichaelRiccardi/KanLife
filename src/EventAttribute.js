@@ -10,16 +10,38 @@ import type { StyleAttributes } from "./Attribute.js";
 
 type Props = {
   styleAttributes?: StyleAttributes,
-  name: string,
   icon: string,
   start: ?Moment,
   end: ?Moment,
   editing: boolean,
+  onChange?: Function,
 };
 
-class EventAttribute extends Component<Props> {
+type State = {
+  date: string,
+  startTime: string,
+  endTime: string,
+};
+
+class EventAttribute extends Component<Props, State> {
+  constructor(props: Props) {
+    super();
+    const { start, end } = props;
+    this.state = {
+      date: start ? start.format("YYYY-MM-DD") : "",
+      startTime: start ? start.format("HH:mm:00") : "",
+      endTime: end ? end.format("HH:mm:00") : "",
+    };
+  }
   render() {
-    const { styleAttributes, name, icon, start, end, editing } = this.props;
+    const {
+      styleAttributes,
+      icon,
+      start,
+      editing,
+      onChange,
+    } = this.props;
+    const { date, startTime, endTime } = this.state;
 
     if (editing) {
       return (
@@ -28,22 +50,31 @@ class EventAttribute extends Component<Props> {
             <Icon name={icon} />
             <input
               type="date"
-              name={name + "Date"}
-              defaultValue={start ? start.format("YYYY-MM-DD") : null}
+              value={date}
+              onChange={event => {
+                this.setState({ date: event.target.value });
+                onChange && onChange(event.target.value, startTime, endTime);
+              }}
             />
           </div>
           <div className="form-group">
             from&nbsp;
             <input
               type="time"
-              name={name + "TimeStart"}
-              defaultValue={start ? start.format("HH:mm:00") : null}
+              value={startTime}
+              onChange={event => {
+                this.setState({ startTime: event.target.value });
+                onChange && onChange(date, event.target.value, endTime);
+              }}
             />
             &nbsp;to&nbsp;
             <input
               type="time"
-              name={name + "TimeEnd"}
-              defaultValue={end ? end.format("HH:mm:00") : null}
+              value={endTime}
+              onChange={event => {
+                this.setState({ endTime: event.target.value });
+                onChange && onChange(date, startTime, event.target.value);
+              }}
             />
           </div>
         </>

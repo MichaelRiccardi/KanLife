@@ -10,15 +10,36 @@ import type { StyleAttributes } from "./Attribute.js";
 
 type Props = {
   styleAttributes?: StyleAttributes,
-  name: string,
   icon: string,
   dateTime: ?Moment,
   editing: boolean,
+  onChange?: Function,
 };
 
-class DateTimeAttribute extends Component<Props> {
+type State = {
+  date: string,
+  time: string,
+};
+
+class DateTimeAttribute extends Component<Props, State> {
+  constructor(props: Props) {
+    super();
+    const { dateTime } = props;
+    this.state = {
+      date: dateTime ? dateTime.format("YYYY-MM-DD") : "",
+      time: dateTime ? dateTime.format("HH:mm:00") : "",
+    };
+  }
+
   render() {
-    const { styleAttributes, name, icon, dateTime, editing } = this.props;
+    const {
+      styleAttributes,
+      icon,
+      dateTime,
+      editing,
+      onChange,
+    } = this.props;
+    const { date, time } = this.state;
 
     if (editing) {
       return (
@@ -26,13 +47,19 @@ class DateTimeAttribute extends Component<Props> {
           <Icon name={icon} />
           <input
             type="date"
-            name={name + "Date"}
-            defaultValue={dateTime ? dateTime.format("YYYY-MM-DD") : null}
+            value={date}
+            onChange={event => {
+              this.setState({ date: event.target.value });
+              onChange && onChange(event.target.value, time);
+            }}
           />
           <input
             type="time"
-            name={name + "Time"}
-            defaultValue={dateTime ? dateTime.format("HH:mm:00") : null}
+            value={time}
+            onChange={event => {
+              this.setState({ time: event.target.value });
+              onChange && onChange(date, event.target.value);
+            }}
           />
         </div>
       );

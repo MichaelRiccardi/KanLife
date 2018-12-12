@@ -9,20 +9,32 @@ import type { StyleAttributes } from "./Attribute.js";
 
 type Props = {
   styleAttributes?: StyleAttributes,
-  name: string,
+  onChange?: Function,
   icon: string,
-  value: string,
+  value: ?string,
   editing: boolean,
 };
 
 class TextAttribute extends Component<Props> {
   render() {
-    const { styleAttributes, name, icon, value, editing } = this.props;
+    const {
+      styleAttributes,
+      icon,
+      value,
+      editing,
+      onChange,
+    } = this.props;
     if (editing) {
       return (
         <div className="form-group">
           <Icon name={icon} />
-          <input type="text" name={name} defaultValue={value} />
+          <input
+            type="text"
+            defaultValue={value}
+            onChange={event => {
+              onChange && onChange(event)
+            }}
+          />
         </div>
       );
     } else {

@@ -12,7 +12,7 @@ export type StyleAttributes = {
 type Props = {
   styleAttributes?: StyleAttributes,
   icon: string,
-  text: string,
+  text: ?string,
 };
 
 class Attribute extends Component<Props> {

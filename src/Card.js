@@ -24,15 +24,6 @@ export type CardType = {
   due: string,
 };
 
-type CardDetailType = {
-  description: ?string,
-  scheduledStart: ?Date,
-  scheduledEnd: ?Date,
-  estimated: ?string,
-  link: ?string,
-  priority: ?number,
-};
-
 type Props = {
   id: string,
   title: string,
@@ -47,14 +38,33 @@ type Props = {
   labels: Array<LabelType>,
 };
 
-type State = {
-  due: ?Moment,
-  details: CardDetailType,
-  editing: boolean,
+type CardDetailsType = {
   title: string,
-  subtitle: string,
+  link: ?string,
+  label: ?LabelType,
+  priority: ?number,
+  description: ?string,
+  estimated: ?string,
+  scheduledStart: ?Moment,
+  scheduledEnd: ?Moment,
+  due: ?Moment,
+};
+
+type State = {
+  editing: boolean,
   saving: boolean,
   dragging: boolean,
+  originalCard: ?CardDetailsType,
+  // Card details -- TODO: Resolve flow issues with using ...CardDetailsType
+  title: string,
+  link: ?string,
+  label: ?LabelType,
+  priority: ?number,
+  description: ?string,
+  estimated: ?string,
+  scheduledStart: ?Moment,
+  scheduledEnd: ?Moment,
+  due: ?Moment,
 };
 
 class Card extends Component<Props, State> {
@@ -81,121 +91,73 @@ class Card extends Component<Props, State> {
     }
     this.state = {
       due: props.due != null ? Moment(props.due) : null,
-      details: details,
       editing: props.isNew ? true : false,
       title: props.title,
-      subtitle: props.subtitle,
-      saving: false,
       dragging: false,
+      saving: false,
+      ...details,
+      label: {
+        name: props.subtitle,
+        id: props.subtitleId,
+      },
+      originalCard: null,
     };
   }
 
-  edit = () => {
-    this.setState({ editing: true });
+  edit = async () => {
+    await this.setState({
+      editing: true,
+      originalCard: this.state,
+    });
   };
 
-  getField = (form: HTMLFormElement, field: string) => {
-    return form[field] instanceof HTMLInputElement ||
-      form[field] instanceof HTMLSelectElement ||
-      form[field] instanceof HTMLTextAreaElement
-      ? form[field].value
-      : "";
-  };
-
-  updateCard = (e: Event) => {
+  saveCard = (e: Event) => {
     e.preventDefault();
 
-    var self = this;
+    const { id, isNew } = this.props;
+    const {
+      description,
+      scheduledStart,
+      scheduledEnd,
+      estimated,
+      link,
+      priority,
+      title,
+      label,
+      due,
+    } = this.state;
 
-    var form = document.forms["edit-" + this.props.id];
-    var utcOffset = new Date().getTimezoneOffset() / 60;
+    const validatedLink = link && link.indexOf("http") === 0 ? link : null;
 
-    var scheduledDate = this.getField(form, "scheduledDate");
-    var scheduledTimeStart = this.getField(form, "scheduledTimeStart");
-    var scheduledTimeEnd = this.getField(form, "scheduledTimeEnd");
-    var estimatedField = this.getField(form, "estimated");
-    var dueDate = this.getField(form, "dueDate");
-    var dueTime = this.getField(form, "dueTime");
-    var linkField = this.getField(form, "link");
-    var priorityField = this.getField(form, "priority");
-    var label = this.getField(form, "label");
-    var name = this.getField(form, "name");
-    var desc = this.getField(form, "desc");
-
-    let detailScheduledStart = null;
-    let detailScheduledEnd = null;
-
-    if (
-      scheduledDate !== "" && //"2017-08-27"
-      scheduledTimeStart !== "" &&
-      scheduledTimeEnd !== ""
-    ) {
-      var start = Moment(scheduledDate + " " + scheduledTimeStart).add(
-        utcOffset,
-        "hours"
-      );
-      var end = Moment(scheduledDate + " " + scheduledTimeEnd).add(
-        utcOffset,
-        "hours"
-      );
-
-      detailScheduledStart = Moment(start).format("YYYY-MM-DDTHH:mm:00[Z]");
-      detailScheduledEnd = Moment(end).format("YYYY-MM-DDTHH:mm:00[Z]");
-    }
-
-    var due = null;
-
-    if (dueDate !== "" && dueTime !== "") {
-      due = Moment(dueDate + " " + dueTime);
-    }
-
-    const details = {
-      description: desc,
-      scheduledStart: detailScheduledStart,
-      scheduledEnd: detailScheduledEnd,
-      estimated:
-        estimatedField !== "" && estimatedField !== "TBD"
-          ? estimatedField
-          : null,
-      link: linkField.indexOf("http") === 0 ? linkField : null,
-      priority: priorityField !== "0" ? parseInt(priorityField) : null,
-    };
-
-    var params = {
-      key: Authentication.TrelloKey,
-      token: Authentication.TrelloToken,
-      idLabels: label,
-      name: name,
-      desc: JSON.stringify(details),
-      due: due ? due.toDate() : null,
-    };
-
-    var url;
-    var type;
-
-    if (this.props.isNew) {
-      type = "POST";
-      url = "https://api.trello.com/1/cards?idList=" + this.props.id;
-    } else {
-      type = "PUT";
-      url = "https://api.trello.com/1/cards/" + this.props.id;
-    }
-
-    this.setState({ saving: true });
+    this.setState({
+      saving: isNew,
+      editing: false,
+      link: validatedLink,
+    });
 
     jQuery.ajax({
-      type: type,
-      url: url,
-      data: params,
-      success: function() {
-        self.props.poll();
-        self.setState({ editing: false });
-        if (self.props.isNew) {
-          self.props.cancelNewCard && self.props.cancelNewCard();
-        }
+      type: isNew ? "POST" : "PUT",
+      url: "https://api.trello.com/1/cards" + (isNew ? "?idList=" : "/") + id,
+      data: {
+        key: Authentication.TrelloKey,
+        token: Authentication.TrelloToken,
+        idLabels: label ? label.id : null,
+        name: title,
+        desc: JSON.stringify({
+          description: description,
+          scheduledStart: scheduledStart,
+          scheduledEnd: scheduledEnd,
+          estimated: estimated,
+          link: validatedLink,
+          priority: priority,
+        }),
+        due: due ? due.toDate() : null,
       },
-      error: function(xhr) {
-        self.setState({ saving: false });
+      success: async () => {
+        await this.props.poll();
+        this.props.cancelNewCard && this.props.cancelNewCard();
+      },
+      error: xhr => {
         alert("Error saving your changes: " + xhr.responseText);
         console.log(xhr);
       },
@@ -203,10 +165,35 @@ class Card extends Component<Props, State> {
   };
 
   cancelEdit = () => {
-    if (this.props.isNew) {
-      this.props.cancelNewCard && this.props.cancelNewCard();
-    } else {
-      this.setState({ editing: false });
+    const { isNew, cancelNewCard } = this.props;
+    const { originalCard } = this.state;
+
+    if (isNew) {
+      cancelNewCard && cancelNewCard();
+    } else if (originalCard) { // Always true, but check to make Flow happy
+      const {
+        description,
+        scheduledStart,
+        scheduledEnd,
+        estimated,
+        link,
+        priority,
+        title,
+        label,
+        due,
+      } = originalCard;
+      this.setState({
+        editing: false,
+        description,
+        scheduledStart,
+        scheduledEnd,
+        estimated,
+        link,
+        priority,
+        title,
+        label,
+        due,
+      });
     }
   };
 
@@ -235,16 +222,22 @@ class Card extends Component<Props, State> {
   };
 
   render() {
-    const { details, dragging } = this.state;
+    const {
+      dragging,
+      due,
+      title,
+      description,
+      priority,
+      estimated,
+      link,
+      scheduledStart,
+      scheduledEnd,
+      editing,
+      saving,
+      label,
+    } = this.state;
 
-    const due = this.props.due ? Moment(this.props.due) : null;
-
-    const descriptionText = details.description || "";
-    const priority = details.priority || 0;
-    const estimatedText = details.estimated || "TBD";
-    const linkText = details.link || "";
-
-    if (this.state.saving) {
+    if (saving) {
       return (
         <div className="card card-outline-info">
           <div className="card-body centered">
@@ -255,22 +248,40 @@ class Card extends Component<Props, State> {
           </div>
         </div>
       );
-    } else if (this.state.editing) {
+    } else if (editing) {
       return (
-        <form id={"edit-" + this.props.id} onSubmit={this.updateCard}>
+        <form onSubmit={this.saveCard}>
           <div className="card card-outline-info">
             <div className="card-body">
               <h4 className="card-title">
                 <input
-                  name="name"
                   type="text"
                   placeholder="Title"
-                  defaultValue={this.state.title}
+                  value={title}
+                  onChange={event =>
+                    this.setState({ title: event.target.value })
+                  }
                 />
               </h4>
 
               <h6 className="card-subtitle mb-2 text-muted">
-                <select name="label" defaultValue={this.props.subtitleId}>
+                <select
+                  value={label ? label.id : ""}
+                  onChange={event => {
+                    const id = event.target.value;
+                    this.setState({
+                      label: {
+                        name:
+                          id !== ""
+                            ? this.props.labels.filter(
+                                label => label.id === id
+                              )[0].name
+                            : "",
+                        id: id,
+                      },
+                    });
+                  }}
+                >
                   <option value="" />
                   {this.props.labels.map(label => (
                     <option value={label.id} key={label.id}>
@@ -278,7 +289,12 @@ class Card extends Component<Props, State> {
                     </option>
                   ))}
                 </select>
-                <select name="priority" defaultValue={priority}>
+                <select
+                  value={priority || "0"}
+                  onChange={event => {
+                    this.setState({ priority: event.target.value });
+                  }}
+                >
                   <option value="0" />
                   <option value="4">Blocker</option>
                   <option value="3">Critical</option>
@@ -289,44 +305,67 @@ class Card extends Component<Props, State> {
 
               <p className="card-text">
                 <input
-                  name="link"
                   type="text"
                   style={{ width: "100%" }}
                   placeholder="URL"
-                  defaultValue={linkText}
+                  value={link || ""}
+                  onChange={event => {
+                    this.setState({ link: event.target.value });
+                  }}
                 />
                 <Textarea
-                  name="desc"
                   placeholder="Description"
-                  defaultValue={descriptionText}
+                  value={description || ""}
+                  onChange={event => {
+                    this.setState({ description: event.target.value });
+                  }}
                 />
               </p>
 
               <TextAttribute
-                name="estimated"
                 icon="clock-o"
-                value={estimatedText}
+                value={estimated}
                 editing={true}
-                styleAttributes={{
-                  classNames: estimatedText === "TBD" ? "tbd" : "",
+                styleAttributes={{}}
+                onChange={event => {
+                  this.setState({ estimated: event.target.value });
                 }}
               />
 
               <EventAttribute
-                name="scheduled"
                 icon="calendar"
-                start={details.scheduledStart}
-                end={details.scheduledEnd}
+                start={scheduledStart}
+                end={scheduledEnd}
                 editing={true}
                 styleAttributes={{}}
+                onChange={(
+                  date: string,
+                  startTime: string,
+                  endTime: string
+                ) => {
+                  if (date && startTime && endTime) {
+                    const scheduledStart = Moment(date + " " + startTime);
+                    let scheduledEnd = Moment(date + " " + endTime);
+                    if (scheduledEnd.isBefore(scheduledStart)) {
+                      scheduledEnd.add(1, "day"); // Allow overnight events
+                    }
+                    this.setState({ scheduledStart, scheduledEnd });
+                  } else {
+                    this.setState({ scheduledStart: null, scheduledEnd: null });
+                  }
+                }}
               />
 
               <DateTimeAttribute
-                name="due"
                 icon="inbox"
                 dateTime={due}
                 editing={true}
                 styleAttributes={{}}
+                onChange={(date: string, time: string) => {
+                  this.setState({
+                    due: date && time ? Moment(date + " " + time) : null,
+                  });
+                }}
               />
 
               <br />
@@ -369,57 +408,51 @@ class Card extends Component<Props, State> {
           {!dragging && (
             <div className="card-body">
               <h4 className="card-title">
-                {details && details.link && (
-                  <a
-                    href={details.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {this.state.title}
+                {link ? (
+                  <a href={link} target="_blank" rel="noopener noreferrer">
+                    {title}
                   </a>
+                ) : (
+                  <span>{title}</span>
                 )}
-                {(!details || !details.link) && <span>{this.state.title}</span>}
                 <span className="card-edit" onClick={this.edit}>
                   <Icon name="pencil" />
                 </span>
                 <span className="card-priority">
-                  <Priority level={priority} />
+                  <Priority level={priority || 0} />
                 </span>
               </h4>
               <h6 className="card-subtitle mb-2 text-muted">
-                {this.state.subtitle}
+                {label ? label.name : ""}
               </h6>
               <div className="card-text">
-                <ReactMarkdown source={descriptionText} />
+                <ReactMarkdown source={description || ""} />
               </div>
               <TextAttribute
-                name="estimated"
                 icon="clock-o"
-                value={estimatedText}
+                value={estimated || "TBD"}
                 editing={false}
                 styleAttributes={{
-                  classNames: estimatedText === "TBD" ? "tbd" : "",
+                  classNames: !estimated ? "tbd" : "",
                 }}
               />
               <EventAttribute
-                name="scheduled"
                 icon="calendar"
-                start={details.scheduledStart}
-                end={details.scheduledEnd}
+                start={scheduledStart}
+                end={scheduledEnd}
                 editing={false}
                 styleAttributes={{
-                  classNames: !details.scheduledStart
+                  classNames: !scheduledStart
                     ? "tbd"
-                    : Moment().isAfter(details.scheduledStart)
+                    : Moment().isAfter(scheduledStart)
                     ? "past-scheduled"
-                    : Moment().isSame(details.scheduledStart, "d")
+                    : Moment().isSame(scheduledStart, "d")
                     ? "scheduled-today"
                     : "",
                 }}
               />
               <br />
               <DateTimeAttribute
-                name="due"
                 icon="inbox"
                 dateTime={due}
                 editing={false}
