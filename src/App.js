@@ -6,7 +6,7 @@ import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../node_modules/font-awesome/css/font-awesome.min.css";
 
-import Authentication from "./authentication.js";
+import Trello from "./Trello.js";
 import jQuery from "jquery";
 
 import Column from "./Column.js";
@@ -43,12 +43,12 @@ class App extends Component<Props, State> {
 
   getColumnsAndLabels() {
     jQuery
-      .get(
-        "https://api.trello.com/1/boards/kNrLkVPc/?labels=all&lists=open&key=" +
-          Authentication.TrelloKey +
-          "&token=" +
-          Authentication.TrelloToken
-      )
+      .get("https://api.trello.com/1/boards/" + Trello.Board, {
+        labels: "all",
+        lists: "open",
+        key: Trello.Key,
+        token: Trello.Token,
+      })
       .then(result => {
         let labels = result.labels;
         labels.sort(function(a, b) {
@@ -61,12 +61,11 @@ class App extends Component<Props, State> {
 
   poll = async () => {
     await jQuery
-      .get(
-        "https://api.trello.com/1/boards/kNrLkVPc/cards?fields=name,desc,due,labels,idList&key=" +
-          Authentication.TrelloKey +
-          "&token=" +
-          Authentication.TrelloToken
-      )
+      .get("https://api.trello.com/1/boards/" + Trello.Board + "/cards", {
+        fields: ["name", "desc", "due", "labels", "idList"],
+        key: Trello.Key,
+        token: Trello.Token,
+      })
       .then(cards => {
         cards.sort((a: CardType, b: CardType) => {
           return (
@@ -93,8 +92,8 @@ class App extends Component<Props, State> {
           type: "DELETE",
           url: "https://api.trello.com/1/cards/" + id,
           data: {
-            key: Authentication.TrelloKey,
-            token: Authentication.TrelloToken,
+            key: Trello.Key,
+            token: Trello.Token,
           },
           success: () => {}, // Success is assumed
           error: xhr => {
@@ -124,8 +123,8 @@ class App extends Component<Props, State> {
           type: "PUT",
           url: "https://api.trello.com/1/cards/" + cardId,
           data: {
-            key: Authentication.TrelloKey,
-            token: Authentication.TrelloToken,
+            key: Trello.Key,
+            token: Trello.Token,
             idList: columnId,
           },
           success: () => {}, // Success is assumed

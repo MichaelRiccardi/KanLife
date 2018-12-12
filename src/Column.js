@@ -3,7 +3,7 @@
 import React, { Component } from "react";
 import Card from "./Card.js";
 
-import Authentication from "./authentication.js";
+import Trello from "./Trello.js";
 import jQuery from "jquery";
 
 import type { CardType } from "./Card.js";
@@ -42,24 +42,19 @@ class Column extends Component<Props, State> {
   };
 
   archiveDone = () => {
-    var self = this;
+    const { id, poll } = this.props;
     if (window.confirm('Are you sure you want to archive all "done" cards?')) {
-      var type = "POST";
-      var url =
-        "https://api.trello.com/1/lists/" + this.props.id + "/archiveAllCards";
-      var params = {
-        key: Authentication.TrelloKey,
-        token: Authentication.TrelloToken,
-      };
-
       jQuery.ajax({
-        type: type,
-        url: url,
-        data: params,
-        success: function() {
-          self.props.poll();
+        type: "POST",
+        url: "https://api.trello.com/1/lists/" + id + "/archiveAllCards",
+        data: {
+          key: Trello.Key,
+          token: Trello.Token,
         },
-        error: function(xhr) {
+        success: () => {
+          poll();
+        },
+        error: xhr => {
           alert("Error archiving cards: " + xhr.responseText);
         },
       });

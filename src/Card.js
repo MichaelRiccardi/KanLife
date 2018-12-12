@@ -1,7 +1,7 @@
 // @flow
 
 import React, { Component } from "react";
-import Authentication from "./authentication.js";
+import Trello from "./Trello.js";
 import Moment from "moment";
 import Textarea from "react-textarea-autosize";
 import jQuery from "jquery";
@@ -139,8 +139,8 @@ class Card extends Component<Props, State> {
       type: isNew ? "POST" : "PUT",
       url: "https://api.trello.com/1/cards" + (isNew ? "?idList=" : "/") + id,
       data: {
-        key: Authentication.TrelloKey,
-        token: Authentication.TrelloToken,
+        key: Trello.Key,
+        token: Trello.Token,
         idLabels: label ? label.id : null,
         name: title,
         desc: JSON.stringify({
