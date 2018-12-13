@@ -44,18 +44,18 @@ class App extends Component<Props, State> {
   getColumnsAndLabels() {
     jQuery
       .get("https://api.trello.com/1/boards/" + Trello.Board, {
-        labels: "all",
         lists: "open",
+        labels: "all",
         key: Trello.Key,
         token: Trello.Token,
       })
       .then(result => {
+        const columns = result.lists;
         let labels = result.labels;
         labels.sort(function(a, b) {
           return a.name.localeCompare(b.name);
         });
-        const columns = result.lists;
-        this.setState({ labels, columns });
+        this.setState({ columns, labels });
       });
   }
 
@@ -79,12 +79,12 @@ class App extends Component<Props, State> {
 
   deleteCard = (id: string) => {
     if (window.confirm("Are you sure you want to delete this card?")) {
-      const cardIndex = this.state.cards.map(card => card.id).indexOf(id);
+      let cards = [...this.state.cards];
+      const cardIndex = cards.map(card => card.id).indexOf(id);
 
       if (cardIndex === -1) {
         alert("Error: Tried to delete a non-existent card.");
       } else {
-        let cards = [...this.state.cards];
         cards.splice(cardIndex, 1);
         this.setState({ cards });
 
@@ -108,13 +108,12 @@ class App extends Component<Props, State> {
   dropCard = (event: DragEvent, columnId: string): void => {
     event.preventDefault();
     const cardId = event.dataTransfer ? event.dataTransfer.getData("text") : "";
-    const cardIndex = this.state.cards.map(card => card.id).indexOf(cardId);
+    let cards = [...this.state.cards];
+    const cardIndex = cards.map(card => card.id).indexOf(cardId);
 
     if (cardIndex === -1) {
       alert("Error: Tried to drop a non-existent card.");
     } else {
-      let cards = [...this.state.cards];
-
       if (cards[cardIndex].idList !== columnId) {
         cards[cardIndex].idList = columnId;
         this.setState({ cards });
@@ -138,23 +137,22 @@ class App extends Component<Props, State> {
   };
 
   render() {
+    const { columns, cards, labels } = this.state;
     return (
       <div className="root">
         <div className="container-fluid" id="board">
           <div className="row">
-            {this.state.columns.map(column => (
+            {columns.map(column => (
               <Column
                 title={column.name}
                 className={column.name}
                 key={column.id}
                 id={column.id}
-                cards={this.state.cards.filter(
-                  card => card.idList === column.id
-                )}
+                cards={cards.filter(card => card.idList === column.id)}
                 poll={this.poll}
                 dropCard={this.dropCard}
                 deleteCard={this.deleteCard}
-                labels={this.state.labels}
+                labels={labels}
               />
             ))}
           </div>

@@ -24,7 +24,6 @@ type Props = {
 };
 
 type State = {
-  classNames: string,
   addingNewCard: boolean,
 };
 
@@ -32,7 +31,6 @@ class Column extends Component<Props, State> {
   constructor(props: Props) {
     super();
     this.state = {
-      classNames: "col " + props.title,
       addingNewCard: false,
     };
   }
@@ -62,63 +60,55 @@ class Column extends Component<Props, State> {
   };
 
   render() {
+    const { title, id, dropCard, cards, poll, labels, deleteCard } = this.props;
     return (
       <div
-        className={this.state.classNames}
-        onDragOver={event => {
-          event.preventDefault();
-        }}
-        onDrop={event => {
-          this.props.dropCard(event, this.props.id);
-        }}
+        className={"col " + title}
+        onDragOver={event => event.preventDefault()}
+        onDrop={event => dropCard(event, id)}
       >
         <h2>
-          {this.props.title}
+          {title}
           <input
             className="btn btn-primary new-button"
             type="button"
             value="+"
             onClick={this.toggleNewCard}
           />
-          {this.props.title === "Done" ? (
+          {title === "Done" && (
             <input
               className="btn btn-success new-button"
               type="button"
               value="&#x267B;"
               onClick={this.archiveDone}
             />
-          ) : (
-            ""
           )}
         </h2>
-
         {this.state.addingNewCard && (
           <Card
             title={""}
-            subtitle={""}
-            subtitleId={""}
+            label={null}
             description={""}
             due={null}
-            id={this.props.id} // Pass Column ID for new card
-            poll={this.props.poll}
+            id={id} // Pass Column ID for new card
+            poll={poll}
             isNew={true}
             cancelNewCard={this.toggleNewCard}
-            labels={this.props.labels}
+            labels={labels}
           />
         )}
-
-        {this.props.cards.map(card => (
+        {cards.map(card => (
           <Card
             title={card.name}
-            subtitle={card.labels[0] ? card.labels[0].name : ""}
-            subtitleId={card.labels[0] ? card.labels[0].id : ""}
+            label={card.labels[0]}
             description={card.desc}
             due={card.due}
             key={card.id}
             id={card.id || ""}
-            poll={this.props.poll}
-            deleteCard={this.props.deleteCard}
-            labels={this.props.labels}
+            poll={poll}
+            isNew={false}
+            deleteCard={deleteCard}
+            labels={labels}
           />
         ))}
       </div>

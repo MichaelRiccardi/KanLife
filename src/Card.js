@@ -27,12 +27,11 @@ export type CardType = {
 type Props = {
   id: string,
   title: string,
-  subtitle: string,
-  subtitleId: string,
+  label: ?LabelType,
   description: string,
   due: ?string,
   poll: Function,
-  isNew?: boolean,
+  isNew: boolean,
   deleteCard?: Function,
   cancelNewCard?: Function,
   labels: Array<LabelType>,
@@ -70,6 +69,7 @@ type State = {
 class Card extends Component<Props, State> {
   constructor(props: Props) {
     super();
+    const { title, label, due, isNew } = props;
     let details = null;
     try {
       details = JSON.parse(props.description);
@@ -81,40 +81,39 @@ class Card extends Component<Props, State> {
         : null;
     } catch {
       details = {
-        description: null,
-        scheduledStart: null,
-        scheduledEnd: null,
-        estimated: null,
         link: null,
         priority: null,
+        description: null,
+        estimated: null,
+        scheduledStart: null,
+        scheduledEnd: null,
       };
     }
     this.state = {
-      due: props.due != null ? Moment(props.due) : null,
-      editing: props.isNew ? true : false,
-      title: props.title,
-      dragging: false,
+      due: due ? Moment(due) : null,
+      editing: isNew,
       saving: false,
-      ...details,
-      label: {
-        name: props.subtitle,
-        id: props.subtitleId,
-      },
+      dragging: false,
       originalCard: null,
+      title: title,
+      label: label,
+      ...details,
     };
   }
 
-  edit = async () => {
-    await this.setState({
-      editing: true,
-      originalCard: this.state,
+  edit = () => {
+    this.setState((prevState: State) => {
+      return {
+        editing: true,
+        originalCard: prevState,
+      };
     });
   };
 
   saveCard = (e: Event) => {
     e.preventDefault();
 
-    const { id, isNew } = this.props;
+    const { id, isNew, poll, cancelNewCard } = this.props;
     const {
       description,
       scheduledStart,
@@ -154,8 +153,8 @@ class Card extends Component<Props, State> {
         due: due ? due.toDate() : null,
       },
       success: async () => {
-        await this.props.poll();
-        this.props.cancelNewCard && this.props.cancelNewCard();
+        await poll();
+        cancelNewCard && cancelNewCard();
       },
       error: xhr => {
         alert("Error saving your changes: " + xhr.responseText);
@@ -170,7 +169,8 @@ class Card extends Component<Props, State> {
 
     if (isNew) {
       cancelNewCard && cancelNewCard();
-    } else if (originalCard) { // Always true, but check to make Flow happy
+    } else if (originalCard) {
+      // Always true, but check to make Flow happy
       const {
         description,
         scheduledStart,
@@ -222,6 +222,8 @@ class Card extends Component<Props, State> {
   };
 
   render() {
+    const { id, isNew, deleteCard, labels } = this.props;
+
     const {
       dragging,
       due,
@@ -273,9 +275,7 @@ class Card extends Component<Props, State> {
                       label: {
                         name:
                           id !== ""
-                            ? this.props.labels.filter(
-                                label => label.id === id
-                              )[0].name
+                            ? labels.filter(label => label.id === id)[0].name
                             : "",
                         id: id,
                       },
@@ -283,7 +283,7 @@ class Card extends Component<Props, State> {
                   }}
                 >
                   <option value="" />
-                  {this.props.labels.map(label => (
+                  {labels.map(label => (
                     <option value={label.id} key={label.id}>
                       {label.name}
                     </option>
@@ -380,15 +380,12 @@ class Card extends Component<Props, State> {
                 value="X"
                 onClick={this.cancelEdit}
               />
-              {!this.props.isNew && (
+              {!isNew && (
                 <input
                   className="btn btn-basic"
                   type="button"
                   value="&#128465;"
-                  onClick={() =>
-                    this.props.deleteCard &&
-                    this.props.deleteCard(this.props.id)
-                  }
+                  onClick={() => deleteCard && deleteCard(id)}
                 />
               )}
             </div>
@@ -400,9 +397,7 @@ class Card extends Component<Props, State> {
         <div
           className="card card-outline-info"
           draggable="true"
-          onDragStart={event => {
-            this.startDrag(event);
-          }}
+          onDragStart={event => this.startDrag(event)}
           onDragEnd={this.endDrag}
         >
           {!dragging && (

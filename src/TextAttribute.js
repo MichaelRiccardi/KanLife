@@ -17,13 +17,7 @@ type Props = {
 
 class TextAttribute extends Component<Props> {
   render() {
-    const {
-      styleAttributes,
-      icon,
-      value,
-      editing,
-      onChange,
-    } = this.props;
+    const { styleAttributes, icon, value, editing, onChange } = this.props;
     if (editing) {
       return (
         <div className="form-group">
@@ -31,9 +25,7 @@ class TextAttribute extends Component<Props> {
           <input
             type="text"
             defaultValue={value}
-            onChange={event => {
-              onChange && onChange(event)
-            }}
+            onChange={event => onChange && onChange(event)}
           />
         </div>
       );
