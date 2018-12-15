@@ -12,7 +12,7 @@ import jQuery from "jquery";
 
 import Column from "./Column.js";
 import type { ColumnType } from "./Column.js";
-import type { CardType } from "./Card.js";
+import type { CardType, CardDetailsType } from "./Card.js";
 
 type Props = {};
 
@@ -86,6 +86,69 @@ class App extends Component<Props, State> {
     document.body && document.body.appendChild(script);
   }
 
+  syncCardToCalendar = async (card: ?CardDetailsType, id: string) => {
+    const { gapi, isGoogleCalendarAuthorized } = this.state;
+    if (!isGoogleCalendarAuthorized) {
+      alert("Can't sync to calendar: Google API instance not authorized.");
+      return;
+    } else if (!gapi) {
+      alert("Can't sync to calendar: Google API instance not instantiated.");
+      return;
+    }
+
+    const search = await gapi.client.calendar.events.list({
+      calendarId: GoogleCalendar.CalendarId,
+      q: "{" + id + "}",
+    });
+    const existingEvent = search.result.items[0];
+    const isScheduled = card && card.scheduledStart && card.scheduledEnd;
+    const hasDueDate = card && card.due;
+
+    if (!card || (!isScheduled && !hasDueDate)) {
+      if (existingEvent) {
+        gapi.client.calendar.events
+          .delete({
+            calendarId: GoogleCalendar.CalendarId,
+            eventId: existingEvent.id,
+          })
+          .then(() => {}, error => alert(JSON.stringify(error)));
+      }
+    } else {
+      const { scheduledStart, scheduledEnd, due, title, description } = card;
+      let event = {
+        calendarId: GoogleCalendar.CalendarId,
+        description: (description || "") + "\n\n{" + id + "}",
+      };
+      if (scheduledStart && scheduledEnd) {
+        event = {
+          ...event,
+          summary: title,
+          start: { dateTime: scheduledStart.toDate().toISOString() },
+          end: { dateTime: scheduledEnd.toDate().toISOString() },
+        };
+      } else if (due) {
+        event = {
+          ...event,
+          summary: "(" + due.format("h:mma") + ") " + title,
+          start: { date: due.format("YYYY-MM-DD") },
+          end: { date: due.format("YYYY-MM-DD") },
+        };
+      }
+      if (existingEvent) {
+        gapi.client.calendar.events
+          .update({
+            ...event,
+            eventId: existingEvent.id,
+          })
+          .then(() => {}, error => alert(JSON.stringify(error)));
+      } else {
+        gapi.client.calendar.events
+          .insert(event)
+          .then(() => {}, error => alert(JSON.stringify(error)));
+      }
+    }
+  };
+
   getColumnsAndLabels() {
     jQuery
       .get("https://api.trello.com/1/boards/" + Trello.Board, {
@@ -146,6 +209,8 @@ class App extends Component<Props, State> {
             alert("Error deleting card: " + xhr.responseText);
           },
         });
+
+        this.syncCardToCalendar(null, id);
       }
     }
   };
@@ -215,6 +280,7 @@ class App extends Component<Props, State> {
                 poll={this.poll}
                 dropCard={this.dropCard}
                 deleteCard={this.deleteCard}
+                syncCard={this.syncCardToCalendar}
                 labels={labels}
               />
             ))}

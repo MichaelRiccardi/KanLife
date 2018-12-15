@@ -33,11 +33,12 @@ type Props = {
   poll: Function,
   isNew: boolean,
   deleteCard?: Function,
+  syncCard: Function,
   cancelNewCard?: Function,
   labels: Array<LabelType>,
 };
 
-type CardDetailsType = {
+export type CardDetailsType = {
   title: string,
   link: ?string,
   label: ?LabelType,
@@ -113,7 +114,7 @@ class Card extends Component<Props, State> {
   saveCard = (e: Event) => {
     e.preventDefault();
 
-    const { id, isNew, poll, cancelNewCard } = this.props;
+    const { id, isNew, poll, cancelNewCard, syncCard } = this.props;
     const {
       description,
       scheduledStart,
@@ -152,7 +153,8 @@ class Card extends Component<Props, State> {
         }),
         due: due ? due.toDate() : null,
       },
-      success: async () => {
+      success: async result => {
+        syncCard(this.state, result.id);
         await poll();
         cancelNewCard && cancelNewCard();
       },

@@ -21,6 +21,7 @@ type Props = {
   cards: Array<CardType>,
   dropCard: Function,
   deleteCard: Function,
+  syncCard: Function,
 };
 
 type State = {
@@ -60,7 +61,16 @@ class Column extends Component<Props, State> {
   };
 
   render() {
-    const { title, id, dropCard, cards, poll, labels, deleteCard } = this.props;
+    const {
+      title,
+      id,
+      dropCard,
+      cards,
+      poll,
+      labels,
+      deleteCard,
+      syncCard,
+    } = this.props;
     return (
       <div
         className={"col " + title}
@@ -94,6 +104,7 @@ class Column extends Component<Props, State> {
             poll={poll}
             isNew={true}
             cancelNewCard={this.toggleNewCard}
+            syncCard={syncCard}
             labels={labels}
           />
         )}
@@ -107,6 +118,7 @@ class Column extends Component<Props, State> {
             id={card.id || ""}
             poll={poll}
             isNew={false}
+            syncCard={syncCard}
             deleteCard={deleteCard}
             labels={labels}
           />
