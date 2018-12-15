@@ -7,6 +7,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "../node_modules/font-awesome/css/font-awesome.min.css";
 
 import Trello from "./Trello.js";
+import GoogleCalendar from "./GoogleCalendar.js";
 import jQuery from "jquery";
 
 import Column from "./Column.js";
@@ -24,6 +25,8 @@ type State = {
   columns: Array<ColumnType>,
   cards: Array<CardType>,
   labels: Array<LabelType>,
+  gapi: ?any,
+  isGoogleCalendarAuthorized: boolean,
 };
 
 class App extends Component<Props, State> {
@@ -33,12 +36,54 @@ class App extends Component<Props, State> {
       columns: [],
       cards: [],
       labels: [],
+      gapi: null,
+      isGoogleCalendarAuthorized: true,
     };
   }
 
   componentDidMount() {
+    this.loadGoogleCalendarAPI();
     this.poll();
     this.getColumnsAndLabels();
+  }
+
+  loadGoogleCalendarAPI() {
+    const script = document.createElement("script");
+    script.src = "https://apis.google.com/js/client.js";
+
+    script.onload = () => {
+      window.gapi.load("client:auth2", () => {
+        window.gapi.client
+          .init({
+            apiKey: GoogleCalendar.ApiKey,
+            clientId: GoogleCalendar.ClientId,
+            discoveryDocs: [
+              "https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest",
+            ],
+            scope: "https://www.googleapis.com/auth/calendar",
+          })
+          .then(
+            async () => {
+              await this.setState({
+                gapi: window.gapi,
+                isGoogleCalendarAuthorized: window.gapi.auth2
+                  .getAuthInstance()
+                  .isSignedIn.get(),
+              });
+              window.gapi.auth2
+                .getAuthInstance()
+                .isSignedIn.listen(isGoogleCalendarAuthorized => {
+                  this.setState({ isGoogleCalendarAuthorized });
+                });
+            },
+            error => {
+              alert(JSON.stringify(error));
+            }
+          );
+      });
+    };
+
+    document.body && document.body.appendChild(script);
   }
 
   getColumnsAndLabels() {
@@ -137,9 +182,27 @@ class App extends Component<Props, State> {
   };
 
   render() {
-    const { columns, cards, labels } = this.state;
+    const {
+      columns,
+      cards,
+      labels,
+      gapi,
+      isGoogleCalendarAuthorized,
+    } = this.state;
     return (
       <div className="root">
+        {!isGoogleCalendarAuthorized && (
+          <div className="banner">
+            To sync scheduled tasks with your calendar,{" "}
+            <button
+              className="btn-warning"
+              type="button"
+              onClick={() => gapi && gapi.auth2.getAuthInstance().signIn()}
+            >
+              Sign in with Google
+            </button>
+          </div>
+        )}
         <div className="container-fluid" id="board">
           <div className="row">
             {columns.map(column => (

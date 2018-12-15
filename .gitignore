@@ -23,4 +23,7 @@ yarn-error.log*
 # Trello private configuration
 /src/Trello.js
 
+# Google Calendar private configuration
+/src/GoogleCalendar.js
+
 /src/authentication.js

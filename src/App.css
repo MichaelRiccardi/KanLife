@@ -13,6 +13,14 @@ textarea {
   width: 100%;
 }
 
+.banner {
+  width: 100%;
+  text-align: center;
+  vertical-align: middle;
+  padding: 1em;
+  background-color: #ffde7d;
+}
+
 code {
   background-color: yellow !important;
   color: black !important;
