@@ -5,11 +5,12 @@ import Trello from "./Trello.js";
 import Moment from "moment";
 import Textarea from "react-textarea-autosize";
 import jQuery from "jquery";
-import ReactMarkdown from "react-markdown";
+// TODO: uninstall - import ReactMarkdown from "react-markdown";
 
 import DateTimeAttribute from "./DateTimeAttribute.js";
 import EventAttribute from "./EventAttribute.js";
 import Icon from "./Icon.js";
+import Markdown from "./Markdown.js";
 import Priority from "./Priority.js";
 import TextAttribute from "./TextAttribute.js";
 
@@ -111,8 +112,8 @@ class Card extends Component<Props, State> {
     });
   };
 
-  saveCard = (e: Event) => {
-    e.preventDefault();
+  saveCard = (e: ?Event) => {
+    e && e.preventDefault();
 
     const { id, isNew, poll, cancelNewCard, syncCard } = this.props;
     const {
@@ -221,6 +222,19 @@ class Card extends Component<Props, State> {
 
   endDrag = (): void => {
     this.setState({ dragging: false });
+  };
+
+  saveCheckbox = async (label: string, isChecked: boolean): void => {
+    await this.setState((prevState: State) => {
+      let description = (prevState.description + "\n").replace(
+        (isChecked ? "[ ] " : "[X] ") + label + "\n",
+        (isChecked ? "[X] " : "[ ] ") + label + "\n",
+      ).substring(0, prevState.description.length);
+      return {
+        description,
+      };
+    });
+    this.saveCard();
   };
 
   render() {
@@ -423,7 +437,10 @@ class Card extends Component<Props, State> {
                 {label ? label.name : ""}
               </h6>
               <div className="card-text">
-                <ReactMarkdown source={description || ""} />
+                <Markdown
+                  content={description || ""}
+                  checkboxAction={this.saveCheckbox}
+                />
               </div>
               <TextAttribute
                 icon="clock-o"

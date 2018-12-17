@@ -49,6 +49,10 @@ input[type="time"] {
   text-align: center;
 }
 
+input[type="checkbox"] {
+  margin-right: 0.3em;
+}
+
 .card-subtitle {
   display: flex;
 }
